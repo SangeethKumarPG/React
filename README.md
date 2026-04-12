@@ -878,3 +878,16 @@ export default function ResultModal({ targetTime, remainingTime, onReset, ref })
 ```
 
 Portals are suitable for use cases like the above where we need to render the elements in a different place other than the place it is defined.
+
+We can use \[\] to specify custom values for tailwind classes. For example:   
+`w-[35rem]` will set the width to 35rem. Tailwind will generate this class for you.
+
+Prop Drilling is the process of sending props through multiple layer of components. The intermediary components may not necessarily need the prop, they just forward the prop to the child component.
+
+If you have an input field which is binded to a state and if you define the state like:  
+` const [enteredTask, setEnteredTask] = useState();` 
+
+Initially the value of the state will be undefined. So whenever the user enters the value in the input field it suddenly changes to string value. React will throw a warning like:  
+`A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component` 
+
+To avoid this warning we should initialize the state as an empty string.
