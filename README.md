@@ -891,3 +891,279 @@ Initially the value of the state will be undefined. So whenever the user enters 
 `A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component` 
 
 To avoid this warning we should initialize the state as an empty string.
+
+The more complex your app, the more components you will use. These components are structured in a component tree. In most cases you might need to manage states, we might need to lift the states up so that the state can be shared between components such that the state defined in a component might be updated by another component. We used props to share these states and update these states. If your application is complex you might need to pass these props through multiple layers of components, which is called **prop drilling**. In most cases the child components may not actually don't need the state data but are simply passing it further down the component tree. This can be a problem because it makes these components less re usable. The components which requires the state must be placed in parts of the component tree where it can access the state. This also means that you will need to write a lot of boiler plate code. 
+
+One possible way to fix this problem is to embrace **component composition**. This is part of a solution but we might need to do some additional things in most cases. For example if we have a shop component which is the child of the app component. The shop component has a child which is the product component. We have a function in the app component which will add the item to the cart called `handleAddItemToCart `(because the state is managed in the app component). We need to pass the this function pointer as prop to the shop component and then later to the product component. We can modify the app component such that we can directly move the product component into the app component by wrapping it inside of the shop component. This way the product component can directly access the `handleAddItemToCart `method. Inside the shop component we should accept the children prop and place the children where the product component was. The code will look like:
+
+```javaScript
+      <Shop>
+        {DUMMY_PRODUCTS.map((product) => (
+          <li key={product.id}>
+            <Product {...product} onAddToCart={handleAddItemToCart} />
+          </li>
+        ))}
+      </Shop>
+```
+
+The above code should be placed in the app component. Then the below code will be inside the shop component:
+
+```javaScript
+export default function Shop({ }) {
+  return (
+    <section id="shop">
+      <h2>Elegant Clothing For Everyone</h2>
+      <ul id="products">
+        {children}
+      </ul>
+    </section>
+  );
+}
+```
+
+This way we are embracing component composition and we are using the shop component to wrap around the list of products and we were able to get rid of one layer of component nesting thus removing part of the prop drilling problem.   
+The down side of the above approach is that you typically don't want to use this approach for all your component layers. If you do so all the components and it's code will end up in your app component. 
+
+A more elegant way of solving the prop drilling problem is to use the **React's Context API**. Context API is built into react. It makes sharing data across components and component layers easy. The idea behind the context api in react is that you create a context value and you provide that value that you wrap this context around multiple components, possibly around all components of your app. The great thing about the context value that you provide to multiple components is that it can be easily connected to states. We can connect the react state to the context value. This way we can get rid of all the props. The context value which is linked to state is provided to all components of our application. The components that needs access or need to modify the state can directly react out to the context and that state. 
+
+It is a common convention to create a folder called `store `inside of the src folder to store the files which has the context values. Inside this folder. Inside this folder we can create jsx files with any name. We can create a context value by using the `createContext `function from react. When you call the function it will create a context value for you. We can store it in a constant variable. When naming this variable we must follow the react components naming convention, because the `createContext `function will return a react component. We can pass the initial value as argument to this function. We can use any type of values for this. After doing these we must provide the context to the application. For this we must export the context variable which was created using the `createContext `method. The code will look like:
+
+```javaScript
+import { createContext } from "react";
+ 
+export const CardContext = createContext({
+    items: [],
+});
+```
+
+After the above step we should go to the app.jsx file which has the app component which wraps all other components. We can then import the context object which was exported from the file in store to the App.jsx file. We should wrap the all the components which requires the context value with the exported variable name(component). In our case the code will look like:
+
+```javaScript
+import { CartContext } from './store/shopping-cart-context.jsx';
+............
+<CartContext>
+      <Header
+        cart={shoppingCart}
+        onUpdateCartItemQuantity={handleUpdateCartItemQuantity}
+      />
+      <Shop>
+        {DUMMY_PRODUCTS.map((product) => (
+          <li key={product.id}>
+            <Product {...product} onAddToCart={handleAddItemToCart} />
+          </li>
+        ))}
+      </Shop>
+    </CartContext>
+```
+
+Using a context value to wrap around components will work if we are using React 19 or above. But this will not work with older versions of react.
+
+In the older versions we must access the Provider property to wrap around the components. In other words we should wrap the components which wants to use the context should be wrapped with the `ContextName.Provider`. In our case we can use like: 
+
+`<CartContext.Provider>....</CartContext.Provider>` 
+
+This approach will also work for React 19\. Here what we are doing is accessing a property from the object. This property holds a react component so we can access it like this. The value stored inside the context will be accessible but the values are created by react.  
+The above steps shows how we can provide a context, the next step is to consume the context.
+
+For consuming the context we must import the context object that we have created inside of the file in the store folder to where we must consume the context. To get a hold of the values inside of the context we must use 2 react hooks. The first one is `useContext `which let's us consume the context. We would use this hook by calling it inside of the component function where we are consuming the context. to this hook we must pass our context object as an argument. We will get a value back from the useContext() method which we can store in a constant or variable object. This variable will be used to get a hold of the values inside of the context.   
+
+This is one way of getting a hold of values inside of the context. There is also an alternative way. For this we can use the `use `hook from react. It is used in the same way as `useContext`. The `use `hook is a bit more flexible than the `useContext `hook. The `use `hook allows us to wrap it inside of blocks inside of the component(if block). Whereas normally you are not allowed to use react hooks inside of if blocks and for loops. But the `use `hook is only available in React 19 and above. In older versions we should use the `useContext `hook. The `useContext `hook is available in react 19 and above also. 
+
+After getting the context using any of the above methods we can access the value stored inside of the context using the . operator. The code will look like:
+
+```javaScript
+import {useContext} from "react";
+import { CartContext } from "../store/shopping-cart-context";
+.......
+const cartCtx = useContext(CartContext);
+  const totalPrice = cartCtx.items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+```
+
+After doing the above steps when we try to run the application we will get an error like:
+
+`` The `value` prop is required for the `<Context.Provider>`. Did you misspell it or forget to pass it? ``   
+Even though we have initialized the value inside of the context, this value will be used only if a component which was not wrapped by the provider component tries to access the context value. To fix the issue we must pass a value prop when wrapping other components with the context object. Inside of the value prop we must pass the value which was initialized in the context file. So the correct way is:
+
+```javaScript
+<CartContext value={{items:[]}}>
+.......
+</CartContext>
+```
+
+This will fix the error.
+
+We initialized the value inside of the context file to get better auto completion.  
+We can also de-structure the value from the value returned from the `useContext `hook. Which means that:  
+`const {items} = useContext(CartContext); `  
+Is also valid. This way we don't need to use the context object to access the value inside of it. So we can use like:
+
+```javaScript
+const totalPrice = items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+```
+
+After this the next step is to connect the context with the state. We can create a state in our app component and initialize it as the same structure of the context value. Then, when we pass this state as the value prop for the context provider. Like:
+
+```javaScript
+function App() {
+  const [shoppingCart, setShoppingCart] = useState({
+    items: [],
+  });
+......
+<CartContext value={shoppingCart}>
+.......
+</CartContext>
+```
+
+This way we can link the context to the state. This way we can only read the state from context, for editing the state through context does not work yet. We should also be able to edit the state through context. We can also pass functions to context object. For example if we want to add items to the cart we need a function to add items to the state. For this we can create a function and set it as a property to the context. The code will look like:
+
+  
+```javaScript
+  const ctxValue = {
+    items: shoppingCart.items,
+    addItemToCart: handleAddItemToCart
+  }
+  return (
+    <CartContext value={ctxValue}>
+```
+
+To get better auto completion we can add an empty arrow function of the same name to the context in the store. Like:
+
+```javaScript
+import { createContext } from "react";
+ 
+export const CartContext = createContext({
+    items: [],
+    addItemToCart: ()=>{}
+});
+```
+
+To use the value from the context we can import the context and the `useContext `hook in the file where we want to use. Then we can de-structure the required function and objects from the context, by passing the context name to the `useContext`. In our case:
+
+```javaScript
+import { useContext } from "react";
+import { CartContext } from "../store/shopping-cart-context";
+...........
+const { addItemToCart } = useContext(CartContext);
+```
+
+This way we can completely avoid using props to modify the state.
+
+The `useContext `hook is the standard way to get data from the context. But there is also an alternative to this. We can use the `ContextObject.Consumer `component to wrap the component's JSX which needs to access data. It requires a special type of child which is a javascript function that is passed between the opening and closing tags. This function will be executed by react. This function will automatically receive the context object as a parameter. In the functions return we should return the JSX elements of the component. The context object that we automatically get as the argument to the function can be accessed in this JSX code. This way we can avoid the usage of `useContext `hook where we are consuming the data from the context. This approach is a little bit cumbersome and harder to read so this is not the default way which we should use to consume data from the context.
+
+When you access a context value in a component and if that value changes, then that component function that accesses the value will get re executed by react as it is using some internal state that was updated or if it's parent component gets executed again. Just as a component function gets re executed by react in such situations it also re executes the components where the components use the `useContext `hook. That is which all components that have access to the context they are all re executed when the value in the context is changed.
+
+You should separate the functions which modifies the state from the App component to make it more lean. There is an alternate react pattern we handle all the context related operations to separate context component. We have created a JSX file in the store to create a context. Inside this file we can create functions and share it. In our case we can create a `CartComponentProvider `function and export it. The name can be chosen according to your wish. The idea behind this is to manage all the state related and context related code to this function. We can place all the code which creates the state, all the operations on the state till where we construct the context value. From this function we must return the Context.Provider component. In our case we should return the `CartContext.Provider`. 
+
+Along with that we should set the value prop to the context value that we have constructed. Since this component is being wrapped around other components, we should accept the children prop to the function and pass it along to the component that is being returned from the function. In the App.jsx we should import the context provider function instead of the context object. The Function will look like:  
+
+```javaScript
+export default function CartContextProvider({children}) {
+    const [shoppingCart, setShoppingCart] = useState({
+        items: [],
+    });
+ 
+    function handleAddItemToCart(id) {
+        .....
+    }
+ 
+    function handleUpdateCartItemQuantity(productId, amount) {
+        .....
+    }
+    const ctxValue = {
+        items: shoppingCart.items,
+        addItemToCart: handleAddItemToCart,
+        updateItemQuantity: handleUpdateCartItemQuantity,
+    }
+    return <CartContext.Provider value={ctxValue}>{children}</CartContext.Provider>
+}
+```
+
+The App.jsx will look like:  
+
+```javaScript
+import Header from './components/Header.jsx';
+import Shop from './components/Shop.jsx';
+import Product from './components/Product.jsx';
+import { DUMMY_PRODUCTS } from './dummy-products.js';
+import CartContextProvider from './store/shopping-cart-context.jsx';
+function App() {
+  
+  return (
+    <CartContextProvider>
+      <Header/>
+      <Shop>
+        {DUMMY_PRODUCTS.map((product) => (
+          <li key={product.id}>
+            <Product {...product} />
+          </li>
+        ))}
+      </Shop>
+    </CartContextProvider>
+  );
+}
+ 
+export default App;
+```
+
+Now the entire App.jsx code became much more leaner and cleaner.  
+**NOTE**: You should wrap the JSX code returned from App.jsx inside of parenthesis if it spans across multiple lines. 
+
+When building complex applications context can be powerful feature. But the functions that update the state can get complex and may be harder to read. When handling complex states such as objects and arrays we will need to update the state based on the previous state by passing functions to the setState method. Instead of using the `useState `hook for creating and managing state we can use another hook provided by react which is `useReducer()`. A reducer is a function reduces one or more complex values to a simpler one. There is also a built in reduce method in javascript which can be used on arrays which let's us perform operations on it and return the result as a single value. The idea behind the useReducer hook is the same as the reduce method, which is to transform one or more complex value to a simpler one for state management purpose. To use this first we need to import it from react. Inside of the react component we will execute the `useReducer `hook just like other hooks in react. 
+
+It will give you an array with exactly 2 elements The first element is the state, the second value will be a `dispatch `function which allows you to dispatch actions which will be handled by a to be defined reducer function. We can provide any name to to dispatch function. We need to define the reducer function that will get triggered by dispatching values and it will then produce a new state. We should define the reducer function outside of the component function because it should not be re created when the component function executes. Also, it don't need direct access to the values defined or updated in the component function. The reducer function should accept 2 parameters a `state `parameter and an `action `parameter. The function will be executed by react when you dispatch an action. The action you dispatch with the dispatch function will be action you receive on the reducer function.
+
+ The state we get in the reducer function will be the latest state snapshot of the state managed by `useReducer`. From the reducer function you should return the updated state. We need to connect the reducer function function with the `useReducer `hook, to achieve this you will pass a pointer as a first argument to `useReducer`. The second value let's you set an initial value for the state which will be used when the state was never been updated yet.   
+The code will now look like:  
+
+```javaScript
+function shoppingCartReducer(state, action){
+    return state;
+}
+export default function CartContextProvider({children}) {
+    const [shoppingCartState, shoppingCartDispatch] = useReducer(shoppingCartReducer, {
+        items: [],
+    });
+....
+```
+
+After this we can use this state variable inside of the component function to access the state. This will set the shopping cart items to an empty array which is defined in the useReducer.
+
+To update this state we have to update the reducer function and handle different actions that leads to different state updates. To trigger an action we should call the dispatch function. When calling the dispatch function we can pass type of arguments. In most cases we pass an object with a `type `or `identifier `key which helps you to call different actions and handle them differently inside of your reducer function. The value of the type can be any identifier of your choice but commonly we used to specify the actions inside of quotes in capital letters separated by underscores. This action also has some data attached to it which will be required to perform the action. We can pass this as a second property to the object. The property name can also be any name of your choice. Often this is called `payload`. In the reducer we will automatically get the object which was passed through the dispatcher call. Inside of the reducer function we can check the type (or any other identifier used)
+
+and update the state accordingly. If we there are more actions we can add more if checks. We can extract the additional data passed through the dispatcher call from the action key of the reducer function. After performing the required action we should return the updated state. Even though the length of the code is not reduced the actions are defined outside of the component function. Also we will get the latest state in the previous function automatically. The code will look like:
+
+```javaScript
+function handleAddItemToCart(id) {
+        shoppingCartDispatch({
+            type: "ADD_ITEM",
+            payload: id,
+        });
+    }
+```
+
+The dispatcher call will look like above and the reducer method will look like:
+
+```javaScript
+function shoppingCartReducer(state, action) {
+    if (action.type === "ADD_ITEM") {
+        const updatedItems = [...state.items];
+ 
+        ...........
+        }
+ 
+        return {
+            items: updatedItems,
+        };
+    }
+    return state;
+}
+```
+
+We should not modify the state data directly instead we should copy the data into a variable and modify it from there.  
+You can also use the `useReducer `hook in other components independent of the context hook. 
