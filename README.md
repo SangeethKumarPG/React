@@ -1167,3 +1167,214 @@ function shoppingCartReducer(state, action) {
 
 We should not modify the state data directly instead we should copy the data into a variable and modify it from there.  
 You can also use the `useReducer `hook in other components independent of the context hook. 
+
+Side effects are tasks that need to be executed in your application in order for the app to work correctly but tasks that don't impact the current component render cycle. For example if you have a list of tourist places and you want to sort the places according to the distance from your current location. For this we need to get the user's location as soon as possible, so for that we can place it inside of the app component. We can use the `navigator `object exposed by the browser to our javascript code. This globally available object has a `geolocation `object which has a `getCurrentPosition()` method which we can call to get the current position of the user of the website. When you call this method the user will be asked to allow the location permission, once the permission is granted it will fetch the location. Fetching the position can take some time, so for this method it needs a callback function as argument which will be executed by the browser once the location can be fetched. 
+
+The callback will automatically receive a `position `object from which we can extract the `latitude `and `longitude`. The latitude and longitude are nested inside the `coords `object which we need to extract using the `.` operator. The code will look like:
+
+```javaScript
+  navigator.geolocation.getCurrentPosition((position) => {
+    const sortedPlaces = sortPlacesByDistance(AVAILABLE_PLACES, position.coords.latitude, position.coords.longitude);
+  });
+```
+
+This entire code is actually a side effect because this code is needed by the application, but it is not directly related to the main goal of the component function it is placed in. The responsibility of each component in react is to render JSX code. We don't need the user's location to display JSX code. Also the above code does not finish instantly. The callback function will be called in some point in the future where the app component might have probably finished the execution.
+
+It is not necessarily a problem if you have side effect in your component. But it will be a problem in the above case because as soon as we get the sorted places we need to display them on the screen. By the time we have the available places the component render cycle might have finished. We can use a state to store the available places. We can set this state as soon as we have obtained the sorted places. When the state is updated with the sorted place, it will trigger a re render of the component. Even though this is a good solution, it has a flaw, because it will cause an infinite loop. This is because we are updating the state it will ask react to re render the component function which the state belongs to. When this happens it will again fetch the user's location again and reset the state. This becomes an infinite loop and crash our application.
+
+We can use the react's `useEffect()` hook to solve the above problem. For using this we need to import it from react. Like all hooks it also should be executed inside of the component function. The useEffect hook does not return a value, instead it needs 2 arguments. The first argument is a function that wraps the side effect code. The second argument is an array of dependencies of that effect function. For now we can pass an empty array and the code will look like:
+
+```javaScript
+useEffect(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const sortedPlaces = sortPlacesByDistance(AVAILABLE_PLACES, position.coords.latitude, position.coords.longitude);
+      setAvailablePlaces(sortedPlaces);
+    });
+  }, []);
+```
+
+This will fix the infinite loop problem.   
+The idea behind `useEffect `is that the function we passed as argument will be executed by react after component function has been executed. 
+
+That is the component function will be executed and display the JSX code in the browser, after this only the function passed in the `useEffect `will be executed. Here when we update the state the component function will be executed again, so theoretically we might assume that the same infinite loop situation will repeat, but here is the part played by the dependency array. If you define these dependencies array, then react will take a look at the dependency array and the dependencies specified there, and it will only execute the function specified in the first argument only if the dependency value is changed. If we pass an empty array, those dependencies cannot change. Therefore react actually never re execute this effect function, it will only execute it once after the component function is executed for the first time. If you omit the dependency array the effect function will execute on every component render cycle and it will cause an infinite loop.
+
+`useEffect `like other react hooks must be used in the root level of the component function. Not all side effects requires the use of `useEffect `because over using of use effect and using it un necessarily is considered a bad practice because it is another execution cycle for the component. For example if we want to store some data into the `localStorage`. The storing of data into the local storage is also a side effect because it has no direct implication to the JSX code which is displayed by the component. Consider the below function:
+
+```javaScript
+ function handleSelectPlace(id) {
+    setPickedPlaces((prevPickedPlaces) => {
+    ........
+    });
+    const storedIds = JSON.parse(localStorage.getItem('selectedPlaces')) || [];
+    if (storedIds.indexOf(id) === -1) {
+      localStorage.setItem('selectedPlaces', JSON.stringify([id, ...storedIds]));
+    }
+  }
+```
+
+In the above code which writes the data into the local storage there is no state updating logic after the item is stored. 
+
+Even if we are updating any state after the storage it will not create an infinite loop because it is inside of a function that is triggered once the it is called. If we are calling the function conditionally like based on a button click there is no need to use the `useEffect `hook.   
+**NOTE**: We only need the useEffect hook to avoid infinite loops or you have code that can only run after the component code is executed at least once.
+
+Another example would be the the retrieval of items from the `localStorage`. We might assume that we need to use the `useEffect `hook to load the data from the `localStorage`. For example:
+
+```javaScript
+  useEffect(()=>{
+    const storedIds = JSON.parse(localStorage.getItem('selectedPlaces')) || [];
+    const storedPlaces = storedPlaces.map((id)=> AVAILABLE_PLACES.find((place)=>place.id === id));
+ 
+    setPickedPlaces(storedPlaces);
+  },[])
+```
+
+In the above code the usage of `useEffect `is redundant, because the operations performed inside of the callback function is synchronous unlike the operations such as getting the current location. It will finish the execution instantly. It will execute line by line, once a line finishes execution it is done and we will have the final result. This was not in the case of fetching the location. 
+
+In this case we can fetch the data from the local storage before state initialization and store the fetched value as the initial state value to be precise we can place the data fetching to outside of the function so that the data is loaded only once when the application starts.
+
+For use cases where we can use the `useEffect `hook, we have seen the use of `useRef `and `useImperativeHandle` hooks to expose the opening and closing of Modals/dialogues. We can avoid the use of these and we can use a state variable to control the opening and closing of the modal. In the parent component of the modal we can define a state to indicate weather the modal is open or closed and where ever we are opening the modal using the refs we can update the state variable using the setState. We can then pass this state as prop to the modal component. Inside of the modal component for the `dialogue `element we can set the `open `prop and set the value which is passed from the parent component. But this approach has a problem even though we will be able to display the dialogue it will not show the backdrop. dialogue element will only show the backdrop if we use the` showModal()` function. We can fix this issue with the help of `useEffect()` hook.
+
+We can try to open the modal by checking the prop passed to it from the parent. If the prop value is true we can show the modal using the `showModal()` method, otherwise we can call the `close()` method. We will get an error if we do so which is:  
+`Uncaught TypeError: Cannot read properties of undefined (reading 'close')` 
+
+This is because the connection between the ref and the element will not be established because when we are trying to call the function on a ref, the JSX code associated with the element will not be executed yet, so the ref will be undefined initially. This is where we can use useEffect. useEffect can help you synchronize prop values/state values to DOM API's like `showModal()` and `close()`. As we learned earlier the callback function in the useEffect will be executed right after the component function is executed. Due to this the connection between the element and ref will be established. 
+
+This can be thought of as side effect, because it will have an impact on the UI but it does not have an impact on the JSX code immediately. We can wrap the code in useEffect but this time we must use the dependency array. 
+
+Dependencies in the end are prop or state values that are used inside of the useEffect's callback function. Any value that causes the component function to execute again is a dependency if it used inside of useEffect. `useEffect `only considers values as dependencies which causes the component function to execute again. For example consider the below code :
+
+```javaScript
+useEffect(() => {
+    if (open) {
+      dialog.current.showModal();
+    } else {
+      dialog.current.close();
+    }
+  }, [open]);
+```
+
+Here if we don't pass the open prop as a dependency the modal will not work because the effect function is not executing again. In the above code the function will execute again if the value of the open prop changes.
+
+Apart from the features that are mentioned earlier `useEffect `has also one additional feature. For this, consider the below component. 
+
+```javaScript
+export default function DeleteConfirmation({ onConfirm, onCancel }) {
+  return (
+    <div id="delete-confirmation">
+      <h2>Are you sure?</h2>
+      <p>Do you really want to remove this place?</p>
+      <div id="confirmation-actions">
+        <button onClick={onCancel} className="button-text">
+          No
+        </button>
+        <button onClick={onConfirm} className="button">
+          Yes
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+This is the content which we placed inside of the modal which ask the user for a confirmation.
+
+ For example if we want to automatically take the user's confirmation after a timeout when the modal is open we can use the `setTimeout()` function provided by the javascript. It takes in 2 arguments the first one is a callback function and the second one is the time in milliseconds to trigger the callback when the time is expired. We can call the `onConfirm()` method which we have already defined to close the modal. Currently this component is always being rendered, so we should make it render conditionally by checking if the modal is open or not. So the timer we have defined will fire automatically when the component is rendered for the first time.   
+This approach also have a problem because when a user click on an image it will show the modal which asks the user for confirmation on deletion. 
+
+During this timer will be set which will automatically trigger delete. But if the user performs the delete manually the timer is not stopped. If the user confirms the option the item will be deleted, but if the user cancels the operation the item will still be removed because the timeout function is not stopped. This problem can be fixed with `useEffect`. In this case the problem was not setting the timer but clearing it when the component function disappears. In `useEffect `we can also define a clean up function which should be executed right before the effect function runs again. We run a clean up function by returning it from the callback function of `useEffect`. This means that we will be returning another function which will be executed by react right before the effect function runs again or right before the component is removed from DOM. We can use this clean up function to stop the timer. 
+
+The clean up function will also run if the effect function runs again, then the cleanup function runs right before the effect function runs. The code will look like:
+
+```javaScript
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onConfirm();
+    }, 3000);
+    return ()=>{
+      clearTimeout(timer);
+    }
+  }, []);
+```
+
+The clean up function will not run before effect function if the effect function is executing for the first time.
+
+If we are getting a function as prop we should just point at them in the dependency array. If you have multiple dependencies you should separate them with ,. There is a problem when adding functions as dependencies to the `useEffect`, there is a danger of creating an infinite loop. Because when you add a dependency to the dependency array we are telling react that this effect function should be executed when the component function and the dependency value is changed. If the dependency passed is a variable like a number, string or boolean the function will re execute when dependency value is changed. When the dependency is a function it is a bit more trickier because you could say that the code in the function which is defined never changes, technically this assumption is not correct. Because functions in javascript are just values (objects). The function which is defined in a component will be re created when the component function is re executed. 
+
+In javascript even if they have the same value two objects are never the same. React compares the two values of the dependency array using the equality operator and determines whether to re execute the effect function. Due to this the function pointer which we pass to the dependency array will be different between the render cycles. This causes the effect function to re execute when re rendering happens even though dependency is not changed. In the above example the infinite loop will not happen because when the onConfirm method is called a state update is triggered and the component itself is removed from dom. There is a safer way which we can use to avoid the problem.
+
+It is by the use of `useCallback `hook provided by react. This hook ensures that the function is not re created all the time. The idea behind this hook is that we wrap it around a function. We pass the function as the first argument to this hook. For the second argument we need an array of dependencies. The `useCallback `hook returns a value, specifically the function which you have wrapped but now it is not recreated if the surrounding component is re executed. This function which we have passed is stored inside of the memory and re used when the component function is executed again. The example will look like:
+
+```javaScript
+import {useCallback} from "react";
+........
+const handleRemovePlace = useCallback(function handleRemovePlace() {
+    setPickedPlaces((prevPickedPlaces) =>
+      prevPickedPlaces.filter((place) => place.id !== selectedPlace.current)
+    );
+    setModalIsOpen(false);
+    const storedIds = JSON.parse(localStorage.getItem('selectedPlaces')) || [];
+    localStorage.setItem('selectedPlaces', JSON.stringify(storedIds.filter(id => id !== selectedPlace.current)));
+  }, []);
+......
+<Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
+        {modalIsOpen &&
+          <DeleteConfirmation
+            onCancel={handleStopRemovePlace}
+            onConfirm={handleRemovePlace}
+          />}
+      </Modal>
+```
+
+In the Delete confirmation component we can use it like:
+
+```javaScript
+import { useEffect } from "react";
+ 
+export default function DeleteConfirmation({ onConfirm, onCancel }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onConfirm();
+    }, 3000);
+    return ()=>{
+      clearTimeout(timer);
+    }
+  }, [onConfirm]);
+  return (
+.....);
+```
+
+There is one more thing we need to do when using `useCallback `that is to set the dependency array. We should add any prop or state values that are used inside of the wrapped function. A general rule of thumb is that we should include any value that the callback uses and can change over time. It is also fine if we pass it as an empty array if there are no such values.
+
+Consider another example for the cleanup function. We had previously seen the implementation of the automatic deletion feature when the modal is opened. We can show a progress bar which indicates that the timer is running and the given item will be deleted after 3 second timer is expired. We can use the `progress `html element inside of the delete confirmation component. To indicate the progress we should manage a state and control the re rendering of the component to show the progress on the screen. For this we can use the `setIntervalFunction` which is provided by javascript. The setInterval takes in a function as the first argument and time in milliseconds as the second argument. The function we passed will be executed again and again after the specified time. We can initialize the state as the total time for the value to be deleted automatically. We can then use the set interval function to reduce 10 milliseconds from the state every 10 milli seconds. 
+
+We can use the state variable as value for the value prop for progress element. We should also pass the `max `value so that the browser can automatically calculate and display the progress. This will cause an infinite loop problem which we have seen earlier, so we should wrap it inside of the `useEffect `and use a clean up function. The code will look like:
+
+```javaScript
+import { useEffect, useState } from "react";
+const TIMER = 3000;
+export default function DeleteConfirmation({ onConfirm, onCancel }) {
+  const [remainingTime, setRemainingTime] = useState(TIMER);
+ 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRemainingTime((prevTime) => {
+        return prevTime - 10;
+      })
+    }, 10);
+    return ()=>{
+      clearInterval(interval);
+    }
+  }, []);
+  useEffect(() => {
+  .....
+  }, [onConfirm]);
+  return (
+    <div id="delete-confirmation">
+       ............
+      <progress value={remainingTime} max={TIMER} />
+    </div>
+  );
+}
+```
+
+The above code is not optimal because every 10 milli seconds the component is re rendered to show the progress bar. Even though it works and does not show any issue on a modern computer this is not optimal. To optimize this we can outsource the progress bar to a separate component so that only one component is re rendered. 
