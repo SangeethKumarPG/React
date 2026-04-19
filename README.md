@@ -1378,3 +1378,21 @@ export default function DeleteConfirmation({ onConfirm, onCancel }) {
 ```
 
 The above code is not optimal because every 10 milli seconds the component is re rendered to show the progress bar. Even though it works and does not show any issue on a modern computer this is not optimal. To optimize this we can outsource the progress bar to a separate component so that only one component is re rendered. 
+
+The `sort `function in javascript is used to sort elements in an array. It takes a function as argument. This function will automatically receive 2 elements as argument. If we are returning a negative number they will be swapped, but if we are returning a positive number their order will remain the same. If we want to shuffle the sorting we can use the `Math.random()` function which returns a value between 0 and 1 and if we subtract 0.5 from that we will have a 50% chance of getting a +ve number and 50% chance of getting a -ve number.
+
+In the dependency array of hooks like `useEffect `and `useCallback `if there are are state updating function we don't need to pass the state as dependency because react will guarantee that they never change.
+
+You can add a `key `prop to any component because it is a prop that react is looking for. Whenever the key prop changes react will destroy the old component and create a new one. Basically it will unmount and re mount the component. We can use this approach to update components in the UI. You must not create 2 components with the same key. Each key must be unique for each component. Using the same key for different components tells React they're the same logical element, which causes unnecessary unmounting/remounting and state loss. We can also de structure the key prop and use it in our child component, but we should not use the `key `as prop name in the child component, because it is reserved for react. We should use a different name for accepting the key and using it in the child component. Eg:
+
+```javaScript
+<Questions
+        key={activeQuestionIndex}
+        index={activeQuestionIndex}
+        onSkipAnswer={skipAnswer}
+      />
+```
+
+We can use the index prop in the Questions child component.
+
+In some cases if there are multiple states inside of a component and the change of a state may cause un expected behavior to the component when that state changes. To solve this we may use the `useEffect `hook and control the re rendering of the component. But as a react developer you should minimize the use of `useEffect `as often time you might misuse it. It is a good practice to avoid the usage of `useEffect `whenever possible. To fix the above scenario we can use `refs `instead of state because the change of the ref value will not cause re execution to the component. 
