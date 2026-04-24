@@ -1396,3 +1396,91 @@ You can add a `key `prop to any component because it is a prop that react is loo
 We can use the index prop in the Questions child component.
 
 In some cases if there are multiple states inside of a component and the change of a state may cause un expected behavior to the component when that state changes. To solve this we may use the `useEffect `hook and control the re rendering of the component. But as a react developer you should minimize the use of `useEffect `as often time you might misuse it. It is a good practice to avoid the usage of `useEffect `whenever possible. To fix the above scenario we can use `refs `instead of state because the change of the ref value will not cause re execution to the component. 
+
+Rendering a component means that executing all the code inside of a component function. Every component must return something that can be rendered typically JSX code. This JSX code is in the end translated to javascript code and translated to actual elements that are shown on the screen. If you have custom components inside of the JSX code react will go ahead and execute those functions from top to bottom. For every application react will generate a component tree like this. For every app the App component is the root element in the render tree and the other components which is rendered inside of it is placed as children to this component. When the parent component is executed if it have children and the if the children have props those props will be passed to child component. Re-renders happen when state or props change, not just on the initial render. So the component function executes again, and React compares the new output with the previous one to update the DOM efficiently.
+
+The profiler tab of react dev tools shows which component is being rendered and which components are being updated on which circumstances. We can click on the start profiling button and interact with the application. After this we can click on stop profiling button which will show the components that has been rendered between the start and stop. The flamegraph chart show the components by the order of their execution along with the relation between component function. It will also show the components that did not re render.   
+When we switch to the ranked chart mode we can see only the components that were re rendered. It will also show the components which caused the re render cycle. The root element will be shown at the top and it's nested child elements will be shown below it.  
+You can also go to the settings and under profiler enable the option to show why each component re rendered.
+
+Previously we have used the `onChange `event on the input fields to listen to the keystrokes and set the state which holds the input data. This way when ever the user enters the input the state will be set which causes the component to re render. If the component also have children it will also re render. Re rendering happens because the component functions are re re executed. If this does not have an impact on the DOM and we want to avoid the un necessary re rendering of components react provides a built in function called `memo `which can be imported from react. After importing it we can pass our component function definitions as argument to the memo function. It returns a component which should be exported instead of the component function which we usually do. The example will look like:
+
+```javaScript
+import { useState, memo } from 'react';
+ 
+const Counter = memo(function Counter({ initialCount }) {
+  log('<Counter /> rendered', 1);
+  const initialCountIsPrime = isPrime(initialCount);
+ 
+  const [counter, setCounter] = useState(initialCount);
+ 
+  function handleDecrement() {
+    setCounter((prevCounter) => prevCounter - 1);
+  }
+ 
+  function handleIncrement() {
+    setCounter((prevCounter) => prevCounter + 1);
+  }
+ 
+  return (
+ 
+.........
+  );
+});
+ 
+export default Counter;
+```
+
+What memo will do is that it will take a look at the props of your component function, when the component function would normally execute again, it will compare the old prop value and new prop value. If both these values are the same the execution of the function will be prevented by memo. It will only execute the component if the prop value change or the internal state change.
+
+**NOTE :**`memo `only blocks the component function re executions triggered by the execution of parent component. memo doesn't consider internal changes for the component such as state change. You should not over use memo. Never wrap all your component functions as memo. Whenever the use of memo is absolutely necessary use them as high up in the component tree as possible. If we do so all the nested components execution will be also blocked. When we memoize a component function react checks the props, when you do this for all the components react will always have to check the props which will have a significant impact on the performance. We also should not memoize component functions which will have frequent prop changes. This is meaningless and will impact the performance. 
+
+When we are passing functions as props to components which is memoized we should wrap those functions with `useCallback `hook because other wise every time the component function of the parent component executes the function will also change thus triggering re render of the memoized component.
+
+A better way than using memo is to adjust the component composition. For components which changes it's states frequently we can create separate components so that the separate component will only re render instead of the whole component which was the previous case. If the state in the child component changes the parent component is not re rendered. This is a much better approach.
+
+We can use the `useMemo()` hook to prevent the re execution of functions inside of a component. This hook prevents the re execution of functions inside of a component function unless the arguments(dependencies) to the function changes. It memoizes the return value so that it will return the same result every time unless the dependency changes. The `useMemo `hook should only be used if you have a complex calculation which you want to prevent the re execution un necessarily. To use this we need to pass a callback function to the `useMemo `hook. This callback function will call the function which will execute and return the result. It also requires a dependency array as the second argument. The idea behind use memo is that react will execute the function which was passed in the anonymous function and store the result. It will only re execute the function if any of the values in the dependency array changes.
+
+If you have an empty dependency array the function will never re execute. You should pass the arguments of the function as dependency. For example:
+
+```javaScript
+import {useMemo} from "react";
+......
+  const initialCountIsPrime = useMemo(() => isPrime(initialCount), [initialCount]);  
+```
+
+In the above example code we used the `useMemo `hook to memoize the result of `isPrime `function. If the `initialCount `is changed then only it will re execute the isPrime method and calculate the result.
+
+You should not over use `useMemo`. You should not wrap all your functions inside of `useMemo()`. Use it only if the functions are computationally expensive and takes time to run and the results will not change unless the parameters to the function changes(same inputs=same outputs). If you have a normal function which needs to be executed when the the component re renders don't use `useMemo`. Use it to optimize the performance where there is actually a performance bottle neck.
+
+Just because a component function is re executed doesn't means that all the code returned by the component is re inserted into the DOM. You can see this by opening the dev tools of the browser. When you interact with the page the elements which change will flash. React works with the help of virtual DOM to find out which parts of the actual DOM need to be updated. The virtual DOM is a snapshot of the real DOM which resides only in the memory. Working with the virtual DOM is faster than working in the real DOM. React creates a component tree and derives the html code to be rendered. Then it creates a virtual DOM snapshot, it is a representation how the real DOM should look like. Whenever a change happens in the page react compares the new snapshot that is generated to the old snapshot that is present. In the initial loading since there is no old snapshot it places the new snap shot as the real DOM. i.e, the entire virtual DOM is inserted to real DOM.
+
+When a change happens it recreates the component tree and derives the updated html code for the entire component tree. It compares the newly generated code (snapshot) with the old code(snapshot) which happens in the memory. It then determines which parts of the code needs to updated, then as a next step react goes ahead and apply those changes to the real DOM(only those changes, nothing else).   
+**NOTE:** Just because a component function is re executed doesn't mean that all the code returned by that component is replaced by react. All the real DOM operations are performance intensive and react tries to minimize it as much as possible. 
+
+The state you registered in a component is scoped to that component and it is recreated whenever you re use the component. This is what makes components re usable. We can create multiple instances of the component and use them in our application. The states of these components will be independent and works separately. State is tracked by the component type, the component's position in the component tree and key if provided. When there are multiple sibling components of the same type and each has it's own state, if a state change triggers a position change for a component the component there are chances of state inconsistencies. React forces you to add a key prop to these type of components such as list items because key is one of the things that is taken into account to map a state to a component. When you are working with states like this try to use objects to store the values, also use unique id's for each value so that each change can be properly tracked and applied.
+
+This way the state change moves with the item. The key prop helps to identify components when there is a dynamic list of similar components. If you don't use a key for sibling elements react may re render all sibling elements un necessarily, also the component state can get mixed up because react relies on position rather than identity. Also the input, focus, animations etc can behave unexpectedly. When you use a unique key only the required elements are updated and all the above mentioned problems are avoided. Usage of keys for items such as lists makes react render items such as lists in a more optimal way.
+
+We can use the key prop to re render the components whenever the key changes. When the key of a component changes react will throw away the old component instance and re create it. This method can be used if a state in a component can change that should lead to some change in child component. 
+
+When you call a state updating function the state update will be scheduled by react. It will not be executed instantly. If you try to access the value of the state right after updating the state you might not get the new state value instantly. When we call the state update function it will trigger a new component function execution and when the component function is executed again the new value will be available inside of the state. When your state update depends on the previous state it is recommended to use the function form for updating the state. The function you pass to the state updating function will automatically get the previous state as the argument and it will return the new state. When using this method react guarantees you that you will get the latest snapshot of the state available. And if multiple updates of the same type should be scheduled they will executed in the order they were scheduled and you will always get the right value in state. 
+
+If you have multiple state updates that are triggered simultaneously inside of the component function, you will not end up with multiple component function executions. This is because react also performs state batching which means that multiple state updates that are triggered from the same function are batched together and will only need one component execution.
+
+We can use the `Million.js` package to optimize the performance of react applications. This package can make your react applications faster. This package can be used for free. You can configure this in you project either in automatic mode or manual mode. In automatic mode you need to install the package using the command :  
+`npm install million`  
+After this since we are using vite we need to configure vite config file. You can paste the following code inside of vite config file like:  
+`import million from "million/compiler";import react from "@vitejs/plugin-react";import { defineConfig } from "vite"; export default defineConfig({ plugins: [million.vite({ auto: true }), react()],});` 
+
+This will provide you some improvements out of the box just by doing this.   
+If you want to ignore certain components we should use the below command as:  
+`// million-ignore`   
+
+Million.js is an optimizing compiler that automatically improves React performance without requiring code changes. t analyzes your React components and compiles them into optimized higher-order components without you needing to rewrite anything. The compiler can make components up to 70% faster by using a different rendering approach. Instead of diffing the entire DOM tree like React does, Million.js diffs data and updates DOM nodes directly, which is significantly more efficient for larger component trees. Million.js uses about 55% of the memory that React does on standby after page load. his is crucial for resource-constrained devices and older hardware, where memory overhead can cause noticeable lag and poor user experience.
+
+Million.js shines for:
+
+* **Static and semi-static components** like forms, landing pages, and CRUD operations
+* **Nested data structures** where tree traversal is expensive (e-commerce, CMSs)
+* **UI-heavy applications** where DOM manipulation is the bottleneck
