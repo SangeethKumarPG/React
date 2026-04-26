@@ -1484,3 +1484,178 @@ Million.js shines for:
 * **Static and semi-static components** like forms, landing pages, and CRUD operations
 * **Nested data structures** where tree traversal is expensive (e-commerce, CMSs)
 * **UI-heavy applications** where DOM manipulation is the bottleneck
+
+Class based components are an alternative to functional components. Even though react prefers functional components many legacy projects and packages of react are in class based components. For functional components we created javascript functions which accepts props and return the JSX code that is rendered on the screen. For class based components we can create a class which extends the `Component `class. The class should have the render method which will return the JSX code. Usage of functional components is the modern and default approach. Apart from `Error Boundaries` there is no need to use class based components. You can build anything that you can build with functional components with class based components also.   
+Prior to react 16.8 usage of class based components were a requirement because that is how state and side effects was managed in react. React 16.8 introduced React Hooks for functional components. 
+
+These hooks brought features to the functional components which were once reserved for class based components. Class based components cannot use react hooks. 
+
+`render` method is a specific method in react which react will call when it finds a component that is used in the JSX code. React will use this render method to determine what should be rendered on the screen. We should return JSX code from the render method.  
+For functional components we had props which was automatically send by react. But for class based components that is not the case. Here the render method doesn't receive props. To make a class based component work we first need to import the Component class from react like:  
+`import {Component} from 'react';` 
+
+Then we need to extend our component class with the `Component `class imported from react. This way our custom component class will inherit from the component class defined by react. It also adds a couple of important properties such as the `props `property. We can access the props passed to a class based component using `this.props.propName`. Example for class based component:
+
+```javaScript
+import classes from './User.module.css';
+import {Component} from 'react';
+class User extends Component{
+  render(){
+    return <li className={classes.user}>{this.props.name}</li>;
+  }
+}
+export default User;
+```
+
+**NOTE:** We still need to export the custom component class we created just like the function for functional components.   
+Class based components can work together with functional components. Class based components can render a functional component and functional components can render class based components. In react projects it is a common practice to either stick with functional components or class based components. 
+
+In class based components we should add the functions required by the component without using the function keyword. For class based components we need to initialize the state inside of the component class and update it when we need it. To define the state inside of class based components we need to use the `constructor ` function. The constructor function is automatically called when the component is instantiated. Inside this we can initialize the component using `this.state` to an object. It is important to note that for class based components your state is always an object. Whereas for functional components your state can be anything like a string, numeric or boolean value. Also the property name should also be `state`, it is not upto us to define the state name. We group all the states that we use inside of the component into a single object. You can add any type of values as attributes to the state object.
+
+When changing the state we should not directly access the properties from the state object and modify it instead we use the `this.setState()` method to update the state. This is provided by the component class. The `setState `method always takes in an object or a function that returns an object. When you pass the property which you want to modify through the `setState`, other properties which are already inside of the state are not modified, instead the new state property is merged with the old state property. Whereas when we use the `useState `hook the new state value overrides the old state value. We can also pass a function to the `this.setState` if your current state change depends on the previous state change.   
+To access the state we can directly access the state using the `this.state.propertyName`. We define variables and constants inside of the `render `method. When calling methods that are present in the component class we should use the `this `keyword to call the methods. 
+
+Additionally we need to bind the function with `bind(this)` so that the functions are correctly pointed and executed.   
+**NOTE:** When using the constructor we should call the `super() `method as the first line of the constructor.   
+Example:
+
+```javaScript
+class Users extends Component {
+  constructor() {
+    super();
+    this.state = {
+      showUsers: true
+    }
+  }
+  toggleUsersHandler() {
+    this.setState((currentState) => {
+      return {
+        showUsers: !currentState.showUsers
+      }
+    });
+  }
+ 
+  render() {
+    const usersList = (
+      <ul>
+        {DUMMY_USERS.map((user) => (
+          <User key={user.id} name={user.name} />
+        ))}
+      </ul>
+    );
+    return (
+      <div className={classes.users}>
+        <button onClick={this.toggleUsersHandler.bind(this)}>
+          {this.state.showUsers ? 'Hide' : 'Show'} Users
+        </button>
+        {this.state.showUsers && usersList}
+      </div>
+    );
+  }
+}
+ 
+export default Users;
+```
+
+All the components in react has a concept of life cycle. For class based components we have life cycle methods to run code at different points of that life cycle. The first and most important life cycle method you can add to the class based component is the `componentDidMount()` method. Like render this is a built in method which you can use when you extend the component class. When you add this method, react will call it when the component is mounted. Apart from this we also have `componentDidUpdate()` and `componentWillUnmount()`. There are also other life cycle methods but these 3 are the most important. The componentDidMount method will be executed by react when the component is mounted(evaluated and rendered by react) to the DOM. This is equivalent to using `useEffect()` hook. Using the useEffect hook with an empty dependency array is same as using `componentDidMount()`. The componentDidUpdate() method is called by react when the component is updated.
+
+ie, when component is re evaluated, and re rendered by react. This is equivalent to the use of `useEffect` with a dependency array. The `componentWillUnmount()` method is called right before the component is removed from DOM. This is equivalent to the cleanup function which we used with the useEffect. 
+
+We can use the `componentDidUpdate `method to execute code when ever the component is updated. Inside this method if we are doing some state updates it will create an infinite loop. To avoid this the `componetDidUpdate `method automatically receives 2 arguments the `previousProps `and `previousState`. We can use an if check before updating the state and determine weather the `previousState` 's data is the same as the current state's data which we want to update. On if they are different we should execute the state updating logic. This way we can avoid an infinite loop. The example code will look like:
+
+```javaScript
+componentDidUpdate(prevProps, prevState) {
+    if (prevState.searchTerm !== this.state.searchTerm) {
+      this.setState(
+        { 
+          filteredUsers: DUMMY_USERS.filter(
+            (user) => user.name.includes(this.state.searchTerm)
+          ) 
+        }
+      );
+    }
+  }
+```
+
+This is the same as:
+
+```javaScript
+useEffect(() => {
+    setFilteredUsers(
+      DUMMY_USERS.filter((user) => user.name.includes(searchTerm))
+    );
+  }, [searchTerm]);
+```
+
+Which is much more leaner and easy to implement because we don't need to manually check if the state is changed. 
+
+We can use the `componentDidMount()` method to execute some code when the component is loaded for the first time. For example you might want to fetch the data from a remote server by using http requests, so we can use this method for that. We don't need to use an if check because this method will only run once when the component is initially rendered for the first time. eg:
+
+```javaScript
+  componentDidMount(){
+    this.setState({
+      filteredUsers: DUMMY_USERS
+    });
+  }
+```
+
+This is the same as using `useEffect `with an empty dependency array or a dependency that remains constant. 
+
+All these life cycle methods run for every component instance just like `useEffect `and state works for every component instance. 
+
+We create the context for class based components as the same way as we used to create for functional components. When using the context inside of functional components we used the `useContext()` hook. But for class based components we can't use it. We can do it in 2 ways, by using the ContextConsumer like we have seen for functional components. Since this is used in JSX only it will work in both class based and functional components. We have seen that we can use the `useContext `hook for listening to multiple contexts inside of the same component. But for class based components we cannot do that. You can connect a class based component only to a single context. We can do that by defining a `static `property to the component class called `contextType `and assigning it with the context object which we have imported from the context file. This tells react that the component will have access to the context. You can only set this once. 
+
+To access the context we can use the `this.context.contextValue` inside of the component. The example will look like:
+
+```javaScript
+class UserFinder extends Component {
+  static contextType = UsersContext;
+.......
+componentDidMount(){
+    this.setState({
+      filteredUsers: this.context.users
+    });
+  }
+```
+
+You only need to use class based components if you are building error boundaries or you have an existing legacy react project which uses class based components. 
+
+Sometimes something goes wrong with your application (not bugs introduced by the developer), some errors that you can't prevent or which are simply being used to transport information that something went wrong from one part of the application to another part. For example an http request, if we sent a http request from our application and if the server is not responding the request can't complete and you will end up with an error in your application. This is not something that we can fix as a developer. This can cause the application to crash because if the error is not handled properly the application might crash. In regular javascript we use `try...catch` we can only use this in places where we can write normal javascript code. If the error is inside of JSX code we cannot wrap that in `try...catch`. In such a case we can use an error boundary. To create an error boundary we can create a javascript file inside of the components folder inside which we can create a class based component. 
+
+The error boundary is a special component class which implements the `componentDidCatch()` method. Thought the `componentDidCatch()` method can be added to any class based component, and it makes the class based component an error boundary. There is no equivalent to this for functional components at the moment. This life cycle method will be triggered when one of the child components throws an error. So inside the custom error boundary component we add a render method. From this render method we will return `this.props.children`. This way we can wrap other components which might cause problems with this custom error boundary component. You can also wrap it around more than one component. To the `componentDidCatch()` method we will get the error object as parameter automatically passed in by react. We can handle this error inside of this function. Since this is a regular class based component we can also use state to set the error states and handle it. An example will look like:
+
+```javaScript
+import { Component } from "react";
+ 
+class ErrorBoundary extends Component{
+    constructor(){
+        super();
+        this.state = {
+            hasError: false
+        }
+    }
+    componentDidCatch(error){
+        this.setState({
+            hasError: true
+        });
+    }
+    render(){
+        if(this.state.hasError){
+            return <p>Something Went Wrong!</p>;
+        }
+        return this.props.children;
+    }
+}
+ 
+export default ErrorBoundary;
+```
+
+We can wrap the components like:
+
+```javaScript
+      <ErrorBoundary>
+        <Users users={this.state.filteredUsers} />
+      </ErrorBoundary>
+```
+
+In the development mode we will see the errors, but in production we will not see any errors if we don't use error boundaries. If we used error boundaries the message that we have set will be displayed to the users. It is similar to try catch in regular javascript because it let's you to catch the errors without crashing the entire application. 
