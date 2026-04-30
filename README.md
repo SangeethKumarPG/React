@@ -1659,3 +1659,155 @@ We can wrap the components like:
 ```
 
 In the development mode we will see the errors, but in production we will not see any errors if we don't use error boundaries. If we used error boundaries the message that we have set will be displayed to the users. It is similar to try catch in regular javascript because it let's you to catch the errors without crashing the entire application. 
+
+We don't directly connect our react apps to a database because we will run into security issues. When you create react apps all your code runs inside of the user's browser. If we are doing so the visitors can access the code and if that code contains credentials to access the database your database might get compromised. There are also some restrictions when writing front-end code for example we cannot easily access the file system that is shared and centrally managed. Instead of directly accessing the database or a shared file system we communicate with a backend server which acts as a middle man. The front end react code which runs in the users browser will communicate with a separate backend server. We interact with the database through this backend server. This backend server and it's code is in accessible to the users of the website. To connect with the front end and backend we use http requests. 
+
+We can send only the http requests that are allowed and accepted by the backend. You can control what the users of the application can do and can't do. This is possible through API (Application Programming Interface) end points. A REST API is a web server that exposes certain pre-defined routes to which HTTP requests can be sent. The API URL's are configured by the developer so that the necessary functionalities can be accessed through proper URL's. We usually have separate front end and backend projects where you don't necessarily need to use the same programming language. You can also build fullstack react apps (blend of front end and backend) via Next JS or Remix. 
+
+When communicating with a backend we are sending http request which needs to travel through the internet and reach the backend server. Then the backend server needs to process that request and send back the response. This might take some time. So in our react component we need to load the component initially without data and once the data is available we need to update the component with the data. 
+
+We can use multiple ways to send http requests to backend servers. We can use the `fetch()` function which is provided by javascript. In the simplest form it requires the URL to which we need to send the request. Out of the box it will send a get request to the specified URL. Fetch function returns a promise which is a javascript value that will eventually resolve to another value. It is basically a wrapper object around a value that is not present yet but eventually will be there. To access the values resolved by fetch we can chain values. We can chain the then method and pass a function to the then method to define a function that should be executed once this promise is resolved and a response is present. This function will automatically receive that response object. In modern javascript we can use the `await `keyword to access the response. The await syntax can only be used if the function wrapping the fetch is marked as `async`.
+
+**We cannot mark component functions as async**. So we should create another async function and wrap it around the fetch call.  
+The response object which we automatically receive as argument to the then() method's callback function has built-in properties and methods. The `.json()` method can be used to extract data in json format. The `json()` method will also return another promise. So if we return that from the first then method, we can chain another `then()` method and access the data. eg:
+
+```javaScript
+const [availablePlaces, setAvailablePlaces] = useState([]);
+  fetch("http://localhost:3000/places").then((response)=>{
+    return response.json();
+  }).then((data)=>{
+    setAvailablePlaces(data.places);
+  });
+```
+
+Though the above code is syntactically correct this above code has a problem. This will create an infinite loop. Because the above code will be executed every time the component function executes. So whenever the state is set after the data is resolved it will again execute the component function.
+
+We cannot send the HTTP request like this. We can fix this infinite loop by using the `useEffect` hook. We can move the above code into the useEffect's call back function. The callback function of `useEffect` is executed **after the DOM has been updated and painted**, but only if its dependencies have changed (or on the initial mount). Since we only need to load the data once we can use an empty array as dependency. The code will look like:
+
+```javaScript
+  useEffect(() => {
+    fetch("http://localhost:3000/places").then((response) => {
+      return response.json();
+    }).then((data) => {
+      setAvailablePlaces(data.places);
+    });
+  }, []);
+```
+
+If we want to use `async await` we cannot directly mark the callback function as `async`. What you can do is create a new function inside of the callback function and mark it as async. Then place the fetch code inside of it. Then inside of the callback function we can call this newly defined async function. The code will look like:
+
+```javaScript
+ useEffect(() => {
+    async function fetchAvaialblePlaces(){
+      const response = await fetch('http://localhost:3000/places');
+      const data = await response.json();
+      setAvailablePlaces(data.places);
+    }
+    fetchAvaialblePlaces();
+  }, []);
+```
+
+When working with http requests it a common practice to use loading state to handle situations where the request is sent and the response is not yet arrived. To simulate this we can throttle the connection by going to the developer tools of the browser, inside the network tab we will see an option for more network conditions. Inside this there is option for choosing the network. We can choose the presets defined. The example code will look like:
+
+```javaScript
+const [isFetching, setIsFetching] = useState(false);
+  const [availablePlaces, setAvailablePlaces] = useState([]);
+  useEffect(() => {
+    async function fetchAvaialblePlaces(){
+      setIsFetching(true);
+      const response = await fetch('http://localhost:3000/places');
+      const data = await response.json();
+      setAvailablePlaces(data.places);
+      setIsFetching(false);
+    }
+    fetchAvaialblePlaces();
+  }, []);
+```
+
+We can use this state to show a loading screen.
+
+Errors can occur when working with http requests. In your front end code you must prepare for conditions where the network request might fail. The request can be failed due to 2 reasons. Either the client might fail to send the request or the request was sent successfully to the backend but the some error happens on the backend and send back an error response. We can check the status of the response by checking the `ok` property which is present in the promise that is returned. If it's value is true then the sever have returned a response with status code 200 or 300\. If that is false, it means that it returned a response that is 400 or 500\. We need to handle these situations. It is a good practice to create a custom error object and throw it. If you throw an error it will crash your application. So you should wrap the code that could potentially throw an error inside of try block. In the catch block we can catch the error and handle the error.
+
+The `fetch `function may also throw an error if there is no network connection. So it is a good idea to wrap this also inside of try catch. In react we might need to show the users that an error has been occurred. So we can use an error state and conditionally display the error message. It is also a good idea to create a custom error page component so that we can re use. The example will look like:
+
+```javaScript
+  const [errorState, setErrorState] = useState(null);
+  useEffect(() => {
+    async function fetchAvaialblePlaces() {
+      setIsFetching(true);
+      try {
+        const response = await fetch('http://localhost:3000/placesXyz');
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error("Failed to fetch places");
+        }
+        setAvailablePlaces(data.places);
+      } catch (error) {
+        setErrorState({message: error.message || "Could not fetch places. Please try again later."});
+      }
+      setIsFetching(false);
+    }
+    fetchAvaialblePlaces();
+  }, []);
+  if(errorState){
+    return <ErrorPage title="An error occured" message={errorState.message} />;
+  }
+```
+
+And the ErrorPage component will look like:
+
+```javaScript
+export default function ErrorPage({ title, message, onConfirm }) {
+  return (
+    <div className="error">
+      <h2>{title}</h2>
+      <p>{message}</p>
+      {onConfirm && (
+        <div id="confirmation-actions">
+          <button onClick={onConfirm} className="button">
+            Okay
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+It is a good idea to create a separate js file for performing http calls because that way we can reduce the code in our components as well as re use those functions. Example:
+
+```javaScript
+export async function fetchAvailablePlaces() {
+    const response = await fetch('http://localhost:3000/places');
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error("Failed to fetch places");
+    }
+    return data.places;
+}
+```
+
+We can send all type of http requests using the `fetch `method. When using http methods other than get we should specify the method type when sending the request. We do this by using the second argument of the fetch method. It is a configuration object that allows you to configure the outgoing request. Inside this object we can define the `method `property which specifies which http method should be send from the client. The `body `property defines which data should be attached to the request. We cannot directly send the request body like this. We need to convert it into a JSON formatted string. The `headers `property of the configuration object allows us to add extra meta data to the request. We should specify the `Content-Type` to `application/json` to inform the backend that the data sending is in JSON format. This ensures that data is extracted successfully on the backend. The code will look like:
+
+```javaScript
+export async function updateUserPlaces(places) {
+    const response = await fetch('http://localhost:3000/user-places', {
+        method: 'PUT',
+        body: JSON.stringify({places}),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    const resData = await response.json();
+    if (!response.ok) {
+        throw new Error("Failed to update user data");
+    }
+    return resData.message;
+}
+```
+
+**We can mark event listener functions as async**.
+
+Optimistic updates are state updates where you update the local state before sending the http request to the backend. The state update is done and the changes will be reflected instantly to the user and the the http request is send to the backend server behind the scenes. There are chances that the http request might return an error response, in those cases we need to handle them. So in the catch block we can set the state to the previous state thus rolling back the update. Often the optimistic updating can provide a better user experience that showing the loading spinner or loading text. You can choose an approach based on the preferences or the exact requirement you want. There are also situations where we cannot use the optimistic updates such as fetching the data, in those cases we need to display the loading state. 
+
+In some cases the UI might update because the state is updated, but when the response from the backend provides an error the instant rollback without any warning message might confuse the user. To avoid this we might need to manage some extra state. 
