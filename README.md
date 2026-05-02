@@ -1,4 +1,4 @@
-# React
+#### React
 
 React let's us write declarative code. i.e, you define the target UI state and not the steps the get there. Normal javascript is imperative code(we need to define the exact steps to update the UI). 
 
@@ -1811,3 +1811,106 @@ export async function updateUserPlaces(places) {
 Optimistic updates are state updates where you update the local state before sending the http request to the backend. The state update is done and the changes will be reflected instantly to the user and the the http request is send to the backend server behind the scenes. There are chances that the http request might return an error response, in those cases we need to handle them. So in the catch block we can set the state to the previous state thus rolling back the update. Often the optimistic updating can provide a better user experience that showing the loading spinner or loading text. You can choose an approach based on the preferences or the exact requirement you want. There are also situations where we cannot use the optimistic updates such as fetching the data, in those cases we need to display the loading state. 
 
 In some cases the UI might update because the state is updated, but when the response from the backend provides an error the instant rollback without any warning message might confuse the user. To avoid this we might need to manage some extra state. 
+
+There are 2 important rules that we should be aware of when using hooks in react:
+
+1. You should only use react hooks only inside of react component functions.
+2. You should only call hooks in the top level statements. You must not nest them in functions or if statements inside of the component functions.
+
+For creating custom hooks we can modify the first rule a little bit. You can use custom hooks inside of other hooks.   
+The idea behind custom hooks is to wrap and re use code that goes into your component functions. For example consider the method we used for making an http request. We used a loading state to show that the data is being loaded, we also called a method which makes the http request, and we also created an error state to handle situations where the http request might fail, and we were using `useEffect `hook to perform all the above. Even though the endpoint is different the core logic remains the same. 
+
+This above condition is a perfect case for using a generic code which helps us to reuse based on the situation. We used components to build configurable re usable UI elements. We can follow the same principle for code that does not return JSX elements. 
+
+```javaScript
+useEffect(()=>{
+    async function fetchPlaces(){
+      setIsFetching(true);
+      try {
+          const places = await fetchUserPlaces();
+          console.log("Places",places);
+          setUserPlaces(places);
+          
+       } catch (error) {
+         setErrorState({message: error.message || "Failed to fetch user places"});
+       } 
+      setIsFetching(false);
+    }
+    fetchPlaces();
+  },[]);
+```
+
+In the above code the useEffect and the logic inside of it we need it inside of the component we cannot put it into a separate component because it is a part of the component. This problem can be solved with custom react hooks.
+
+In normal scenarios where we need to reuse code we used functions, but here we already have a hook, so we cannot outsource it into a function. We can only use the react hooks (including state updates) inside of component functions. 
+
+It is a good practice to create a custom folder for keeping the custom hooks though it is totally optional. Inside this folder we can create a js file to store our custom hook, you can use any name for the js file. Inside this file we should create function, the name of the function should start with `use`. Functions that starts with `use `are treated as hooks in react. React will look for such functions in the project and enforce certain rules for those functions (such as using them only inside of a component function or custom hooks). These rules are important because using the hooks in wrong place could result in un expected behaviors. You should not clash the name of the custom hooks with the built in hooks in react. Custom hooks can make your component functions leaner. We also can use the same custom hook in other components to re use the functionality.
+
+A custom hook is just like a function, i.e it can receive parameters. This can make the custom hooks more generic and re usable. From the custom hook we can return the data like states for data, loading and errors in the form of either array or object. Most importantly we should export the custom hook function. The example code will look like: 
+
+```javaScript
+import { useEffect, useState } from "react";
+export function useFetch(fetchFn) {
+  const [isFetching, setIsFetching] = useState(false);
+  const [errorState, setErrorState] = useState(null);
+  const [fetchedData, setFetchedData] = useState(null);
+  useEffect(() => {
+    async function fetchData() {
+      setIsFetching(true);
+      try {
+        const places = await fetchFn();
+        console.log("Places", places);
+        setFetchedData(places);
+      } catch (error) {
+        setErrorState({ message: error.message || "Failed to fetch data" });
+      }
+      setIsFetching(false);
+    }
+    fetchData();
+  }, [fetchFn]);
+  return { isFetching, fetchedData, errorState };
+}
+```
+
+The great thing about using a custom hook is that any state that you used in the custom hook will belong to the component in which the hook is exported to. So when the state defined in the custom hook changes the component where the hook is imported will also execute again. We can use it like:
+
+```javaScript
+import { useFetch } from "./hooks/useFetch.js";
+.........
+  const {isFetching, errorState, fetchedData} = useFetch(fetchUserPlaces);
+```
+
+In our custom hook we are not just limited to exposing state values. We can also expose state updating functions and custom functions. We can also use aliases for functions and objects returned by the custom hook like:  
+`const {objectExposedFromHook : aliasName} = useCustomHook();` 
+
+The use of custom hooks is same as that components. That is when ever you use a custom hook inside of a component the states and methods that are used inside the custom hook will have a dedicated instance where the hook is used. So using them in other components will not affect the state that is present in the hook. When ever you use the custom hook in another component a new snapshot for the state which is present inside of the hook.
+
+We will need to add the state updating functions exposed from the custom hook as dependencies for `useCallback `functions. 
+
+We can create a promise by using the `Promise()` constructor provided by javascript. It takes in a function which automatically gets 2 parameters `resolve` and `reject`. In the function's body we can execute the code which we want which will return a promise. Then to makes sure that the value is returned we can call the `resolve `method and pass the value which should be returned by the promise. We can use the reject method to throw an error if anything goes wrong. The promise constructor can turn a code that does not return a promise to a code that returns a promise. The example code will look like:
+
+```javaScript
+async function fetchSortedPlaces() {
+  const places = await fetchAvailablePlaces();
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve(sortPlacesByDistance(places, pos.coords.latitude, pos.coords.longitude)),
+      () => reject(new Error("Failed to get location"))
+    );
+  });
+}
+export default function AvailablePlaces({ onSelectPlace }) {
+  const { isFetching, errorState, setFetchedData, fetchedData } = useFetch(fetchSortedPlaces, []);
+  if (errorState) return <ErrorPage title="An error occurred" message={errorState.message} />;
+  return (
+    <Places
+      title="Available Places"
+      places={fetchedData}
+      isLoading={isFetching}
+      loadingText="Fetching places..."
+      fallbackText="No places available."
+      onSelectPlace={onSelectPlace}
+    />
+  );
+}
+```

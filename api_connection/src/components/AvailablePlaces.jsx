@@ -1,31 +1,40 @@
-import { useEffect, useState } from 'react';
-import Places from './Places.jsx';
-import ErrorPage from './ErrorPage.jsx';
-import { sortPlacesByDistance } from '../loc.js';
-import {fetchAvailablePlaces} from '../http.js';
+import Places from "./Places.jsx";
+import ErrorPage from "./ErrorPage.jsx";
+import { sortPlacesByDistance } from "../loc.js";
+import { fetchAvailablePlaces } from "../http.js";
+import { useFetch } from "../hooks/useFetch.js";
 
+async function fetchSortedPlaces() {
+  try {
+    const places = await fetchAvailablePlaces();
+
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const sortedPlaces = sortPlacesByDistance(
+            places,
+            position.coords.latitude,
+            position.coords.longitude,
+          );
+          resolve(sortedPlaces);
+        },
+        (error) => {
+          reject(new Error("Failed to fetch sortedPlaces"));
+        },
+      );
+    });
+  } catch (error) {
+    throw new Error("Failed to fetch sortedPlaces");
+  }
+}
 export default function AvailablePlaces({ onSelectPlace }) {
-  const [isFetching, setIsFetching] = useState(false);
-  const [availablePlaces, setAvailablePlaces] = useState([]);
-  const [errorState, setErrorState] = useState(null);
-  useEffect(() => {
-    async function fetchAvaialblePlaces() {
-      setIsFetching(true);
-      try {
-        const places = await fetchAvailablePlaces();
-        navigator.geolocation.getCurrentPosition((position) => {
-          const sortedPlaces = sortPlacesByDistance(places, position.coords.latitude, position.coords.longitude);
-          setAvailablePlaces(sortedPlaces);
-          setIsFetching(false);
+  const {
+    isFetching,
+    errorState,
+    setFetchedData: setAvailablePlaces,
+    fetchedData: availablePlaces,
+  } = useFetch(fetchSortedPlaces, []);
 
-        });
-      } catch (error) {
-        setErrorState({ message: error.message || "Could not fetch places. Please try again later." });
-        setIsFetching(false);
-      }
-    }
-    fetchAvaialblePlaces();
-  }, []);
   if (errorState) {
     return <ErrorPage title="An error occured" message={errorState.message} />;
   }
