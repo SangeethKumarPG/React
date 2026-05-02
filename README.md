@@ -1,16 +1,16 @@
-#### React
+# React
 
-React let's us write declarative code. i.e, you define the target UI state and not the steps the get there. Normal javascript is imperative code(we need to define the exact steps to update the UI). 
+React let's us write declarative code. i.e, you define the target UI state and not the steps the get there. Normal javascript is imperative code(we need to define the exact steps to update the UI).
 
 To create a react app with vite we can use `**npm create vite@latest**` this will give you a list of options from which you can use react. The react code we write is in .JSX extension which is in HTML and javascript. This format is not recognized by the browser. we need to convert this into normal js files for the browser to run. Build tools like vite and create-react-app helps in creating the javascript and html files from the JSX code. The js code generated like this will be minimal in size and faster compared to the vanilla javascript code you write for the same things.
 
-Components is the core concept of react. Component are build up of react, html and css. Components make it possible for each components to have it's own styling, structure and logic. These components are also reusable and easily manageable. Without components if you want to make changes you need to make changes in multiple places in your code base. This is time consuming and error prone. Components allows us to have separation of concerns. With components relatable components live together. 
+Components is the core concept of react. Component are build up of react, html and css. Components make it possible for each components to have it's own styling, structure and logic. These components are also reusable and easily manageable. Without components if you want to make changes you need to make changes in multiple places in your code base. This is time consuming and error prone. Components allows us to have separation of concerns. With components relatable components live together.
 
 **JSX stands for Javascript Syntax Extenstion.**
 
 Built in html components which starts with lower case are rendered as DOM nodes by react. Only valid officially defined html elements are allowed in this. The custom components starts with uppercase, defined by you will be traversed by react until there are only built in components left.
 
-**{} - are used to output values or execute js code inside the jsx code.** 
+**{} - are used to output values or execute js code inside the jsx code.**
 
 To dynamically load static files such as images in react component you can import the image with any variable name you like and pass the variable name to the src attribute of the img tag
 
@@ -24,16 +24,16 @@ Props : Helps us to pass data into our component make them reusable. You can pas
 
 If you need to pass an object properties as props to the components we can use the spread operator to spread the object. The key name of the object will be considered as the prop name and the value of the property will be considered as the values of the property.
 
-eg: `<CoreConcepts {...CORE_CONCEPTS[0]}/>` instead of using `<CoreConcepts title={CORE_CONCEPTS[0].title} image = {CORE_CONCEPTS[0].image} />` 
+eg: `<CoreConcepts {...CORE_CONCEPTS[0]}/>` instead of using `<CoreConcepts title={CORE_CONCEPTS[0].title} image = {CORE_CONCEPTS[0].image} />`
 
 You can also use object destructuring in the component function to extract the properties. We can access these properties as standalone variables inside the component function.
 
-You can also accept multiple values into a single variable in the component function like   
-`function MyComponent({...concept}){}` 
+You can also accept multiple values into a single variable in the component function like  
+`function MyComponent({...concept}){}`
 
 **It is recommend to create separate files for different components to make your components more manageable. Unless the components are tightly dependent on each other it is not recommended to store them in a single file.** Generally all the components are present in the components folder in the src folder. This is not a requirement but a common choice. The common convention of the file name is to have the same name of the component to be stored inside the file.
 
-**The children prop in react will give whatever text is passed between the components opening and closing tags. This is automatically set by react.** 
+**The children prop in react will give whatever text is passed between the components opening and closing tags. This is automatically set by react.**
 
 Eg:
 
@@ -54,7 +54,7 @@ export default function TabButton(props) {
 
 **This way of passing components inside other components is called component composition. This works same as passing as props.**
 
-In react even the built-in html components have props. These props are used for various purposes such as adding events, styling etc. For events in react we need to pass the event name as prop and the value of the prop needs to be a function which needs to be executed on the event. In javascript we can add functions inside of a function by this, we make sure that the function we write is only accessible from inside of the parent function. We don't need to pass parenthesis with the event name in the props. If we use paranthesis it will call the function. We are just passing the reference of the function to be executed by react. 
+In react even the built-in html components have props. These props are used for various purposes such as adding events, styling etc. For events in react we need to pass the event name as prop and the value of the prop needs to be a function which needs to be executed on the event. In javascript we can add functions inside of a function by this, we make sure that the function we write is only accessible from inside of the parent function. We don't need to pass parenthesis with the event name in the props. If we use paranthesis it will call the function. We are just passing the reference of the function to be executed by react.
 
 We can also pass functions to components as props. When you are passing functions that handle events it is a common standard that we must use 'on' prefix for the function name.
 
@@ -64,11 +64,11 @@ In react every component function only runs once when they are loaded. If we nee
 
 To make react know about the changes in the data of a component and re render the component we must use a special function called react hooks. The hooks start with 'use' as prefix. Examples are useState(), useEffect() etc. Technically hooks are functions but they must be called inside the react component functions or react hooks. The calling to react hooks must be in the root level of the component function and not inside a nested function. They must not be nested in any type of statements such as if statements. useState() is one of the most important react hook. useState() accepts a parameter which is the initial value. It will return a value, it will return an array. it has 2 elements inside it which are the current value and the setter function. The value will be updated. The 2nd element of the useState will always be a function. This setter allows us to set values. Whenever the value changes the component will re-render.
 
-When you call the state updating function it schedules a state update. Then the function will be re executed. Only after this the new value is available i.e the value will not be updated right after calling the update function. 
+When you call the state updating function it schedules a state update. Then the function will be re executed. Only after this the new value is available i.e the value will not be updated right after calling the update function.
 
 To render data conditionally inside jsx code we can use {} inside which we can use !, ?: , && operators. It is ok to use null inside if you don't have an or condition for ternary operator.
 
-Alternative to this approach we can create a condition before the return and store the jsx code inside a variable and output the variable. this approach is more cleaner. note that we must use () to store the jsx code. also they should be wrapped in a div or empty fragments. 
+Alternative to this approach we can create a condition before the return and store the jsx code inside a variable and output the variable. this approach is more cleaner. note that we must use () to store the jsx code. also they should be wrapped in a div or empty fragments.
 
 If you want to add a class to a button in JSX you need to use the className property. We can set the classnames dynamically using the {}.
 
@@ -87,10 +87,10 @@ eg:
 You don't necessarily need to write JSX code for react application, you can use regular html or use javascript features to create components.
 
 ```javaScript
-React.createElement('div', 
-    {id: 'content'}, 
+React.createElement('div',
+    {id: 'content'},
     React.createElement('p', null. 'Hello World')
-); 
+);
 ```
 
 this is the same as:
@@ -101,7 +101,7 @@ this is the same as:
 </div>
 ```
 
-The first argument of createElement is the type of component. The second argument is used for passing props. The third argument is the child content which specifies the data to be passed to the component. This can also be nested components. When you use this type of approach you don't need to use build process. The JSX approach is easier to create and read. 
+The first argument of createElement is the type of component. The second argument is used for passing props. The third argument is the child content which specifies the data to be passed to the component. This can also be nested components. When you use this type of approach you don't need to use build process. The JSX approach is easier to create and read.
 
 JSX return statement should have a parent element if there are multiple elements to be returned. This is because javascript don't support the return of multiple values from a same return of a function. To avoid this normally we wrap the code inside a div. This creates an unnecessary div that wraps our component's children. To avoid this, we can use <></> called fragments. The fragments will not be rendered on the screen. The older versions of react used Fragment component from react. But newer components uses the empty fragment notation.
 
@@ -153,10 +153,10 @@ In the parent component we need to pass like:
 ....</Tabs>
 ```
 
-**_Passing a component identifier as a prop value and using this value inside the component to render different HTML elements is a crucial react concept._** 
+**_Passing a component identifier as a prop value and using this value inside the component to render different HTML elements is a crucial react concept._**
 **NOTE: If you are passing a prop name that starts with capital letters you don't need to re-assign them to a const.**
 
-We can have default prop value. 
+We can have default prop value.
 
 eg:  
 `export default function Tabs({children, buttons, ButtonContainer='menu'}){}  
@@ -166,11 +166,11 @@ eg:
 
 Whenever you are using two instances of a components they work in an isolated environment. If the state in one component instance changes the other component is not affected. This is an important feature. This helps the user to create complex reusable components that doesn't interfere with each other.
 
-In react when updating state based on previous value of that state, pass a function to your state updating function. This function will be called automatically by react and will receive the guaranteed latest state.   
-` setIEditing(prev=!prev);`   
+In react when updating state based on previous value of that state, pass a function to your state updating function. This function will be called automatically by react and will receive the guaranteed latest state.  
+` setIEditing(prev=!prev);`  
 The function will automatically the previous state as input.
 
-Even though `setIsEditing(!isEditing)` will work, it is not guaranteed to be always working. because behind the scenes react is scheduling a state update. This may lead to unexpected behaviours when we are updating the state multiple times. 
+Even though `setIsEditing(!isEditing)` will work, it is not guaranteed to be always working. because behind the scenes react is scheduling a state update. This may lead to unexpected behaviours when we are updating the state multiple times.
 
 ```javaScript
 import React from "react";
@@ -206,11 +206,11 @@ export default function Player({ name, symbol }) {
 }
 ```
 
-The above mentioned is the example of two way data binding. Here we are taking the input of the user and setting it to the output. 
+The above mentioned is the example of two way data binding. Here we are taking the input of the user and setting it to the output.
 
 **NOTE: You can only use () inside a {} in JSX code**
 
-If your state is an object or an array you should update them in an immutable way. 
+If your state is an object or an array you should update them in an immutable way.
 
 ```javaScript
   function handleSelectSqaure(rowIndex, colIndex) {
@@ -229,34 +229,33 @@ If you are spreading a nested array we need to iterate over the outer array elem
  const updatedBoard = [...prev.map((innerArray) => [...innerArray])];
 ```
 
-  
-If we need to share component state between components, the most basic method is state lifting. For this we need to have the state value in the ancestral component which has access to both the child component which requires the data from the parent component. The state data is passed as props. 
+If we need to share component state between components, the most basic method is state lifting. For this we need to have the state value in the ancestral component which has access to both the child component which requires the data from the parent component. The state data is passed as props.
 
 **We must not states everywhere. We must derive state from props. We should only use states only when necessary. We should derive information from states. That is we must compute or derive relevant data from the existing states.**
 
-Arrays and objects are stored as reference values in memory in javascript. Whenever we are editing those values, we are editing those original values in memory. 
+Arrays and objects are stored as reference values in memory in javascript. Whenever we are editing those values, we are editing those original values in memory.
 
-The straight forward approach is to add the css rules in the main css file and import it on the main app component. These files are plugged into the the project at runtime by build tools such as vite. But this can get complex. 
+The straight forward approach is to add the css rules in the main css file and import it on the main app component. These files are plugged into the the project at runtime by build tools such as vite. But this can get complex.
 
-We can also split the files into multiple css files and import them. This works in the same way as the previous approach. 
+We can also split the files into multiple css files and import them. This works in the same way as the previous approach.
 
-The advantage of this approach is that the designer can design the page by creating a styles files. This style file can be used by the developer to be imported into the component and style them. CSS code can be written as is in this approach. This approach decouples the css code from javascript code. 
+The advantage of this approach is that the designer can design the page by creating a styles files. This style file can be used by the developer to be imported into the component and style them. CSS code can be written as is in this approach. This approach decouples the css code from javascript code.
 
-The disadvantage is that you need to know css. also, CSS code is not scoped to components. This means that there might be style conflicts because same class name might be stored in different components. 
+The disadvantage is that you need to know css. also, CSS code is not scoped to components. This means that there might be style conflicts because same class name might be stored in different components.
 
 Any CSS code you write in a CSS file will be available to all the components of the project. So when using element selectors there might be conflicts. Even you split the css code among multiple files and import them to the required components. the css code will not be scoped. All the CSS files are injected to the head section of the html page and will be applied globally.
 
-To avoid the scoping issue of vanilla CSS we can use inline styles in the JSX code. You can do this by using style prop. inside the style prop we should pass a dynamic value as an object. The style should be applied as key value pair. 
+To avoid the scoping issue of vanilla CSS we can use inline styles in the JSX code. You can do this by using style prop. inside the style prop we should pass a dynamic value as an object. The style should be applied as key value pair.
 
-`<p style={{color:"red"}}>Sample</p>` 
+`<p style={{color:"red"}}>Sample</p>`
 
-if there are - in the css property we should use camel case for the css property. 
+if there are - in the css property we should use camel case for the css property.
 
-These inline styles only affects the jsx element in which you add them. It is easy to add. 
+These inline styles only affects the jsx element in which you add them. It is easy to add.
 
-The disadvantage is that you need to know css and also that you need to target each elements individually. This create css code redundancy. This also removes the separation between the CSS and JSX code. A single person should work on both styling and logic. Another advantage of inline style is that we can conditionally add styling logic. we can evaluate conditions for css properties. eg: 
+The disadvantage is that you need to know css and also that you need to target each elements individually. This create css code redundancy. This also removes the separation between the CSS and JSX code. A single person should work on both styling and logic. Another advantage of inline style is that we can conditionally add styling logic. we can evaluate conditions for css properties. eg:
 
-`<p style={{backgroundColor: emailValid ? 'green' : 'red'}}>Email</p>`  
+`<p style={{backgroundColor: emailValid ? 'green' : 'red'}}>Email</p>`
 
 You can also add css classes conditionally. If you have only once class to be added conditionally still you need to use ternary operator with 'undefined' as the else condition. Otherwise you will get a warning if you use && operator with just one condition. We can also add class names along with the regular classes using the template literal approach. The following is an example:
 
@@ -282,7 +281,6 @@ function App() {
 export default App;
 ```
 
-  
 CSS modules allows you to write vanilla css which is scoped. It needs to be enforced by the build tools. To create a css module in react we must name the css file as `component.module.css` where component is the name of the component. When importing the module we must use :
 
 ```javaScript
@@ -291,15 +289,15 @@ import classes from './Header.module.css';
 <p className={classes.paragraph}>....</p>
 ```
 
-where paragraph is a classname defined in the css module. the classes is a javascript object. We can choose any name instead of classes. By utilising this approach the css classes will get a unique name which is generated by the build process automatically. The classes and styles are scoped to the components which import the styles thus avoiding conflicts. 
+where paragraph is a classname defined in the css module. the classes is a javascript object. We can choose any name instead of classes. By utilising this approach the css classes will get a unique name which is generated by the build process automatically. The classes and styles are scoped to the components which import the styles thus avoiding conflicts.
 
 The advantage of this approach is that the css code is decoupled from the JSX code, another person can write the css code. The css rules are scoped to the components which import the module.
 
-The disadvantage is that you still need to know css. Also you will end up with many relatively small css files in your project. 
+The disadvantage is that you still need to know css. Also you will end up with many relatively small css files in your project.
 
 For creating styled components we need to install a special npm package which is styled components. For this use `npm install styled-components` . To use this in our components we need to import the styled object from styled-component package like:
 
-`import {styled} from 'styled-components';` 
+`import {styled} from 'styled-components';`
 
 You can access different html tags which are properties of the styled object with the . notation. What it does is that it creates the html element as separate component, but the component will have custom style. After the property name we need to use \`\`. This double backticks are called tagged templates which is a javascript feature. All the css styles are placed between the backticks. Normal css rules can be used as is in this (multi-line text). eg:
 
@@ -314,8 +312,7 @@ const Controls = styled.div`
 
 This will return a div which is styled into a react component. This component will also have a children prop for wrapping other components.
 
-  
-Behind the scenes the styled components creates custom css classes with the styles you defined. And it will be applied dynamically at the run time. 
+Behind the scenes the styled components creates custom css classes with the styles you defined. And it will be applied dynamically at the run time.
 
 We can add all the normal props to a styled components. Such as id, className etc. We can also add event listeners which are available for the components. All the correct props you define for the styled component will be forwarded to the underlying html element.
 
@@ -341,7 +338,6 @@ you can add the props to the label component as :
  <Label invalid={emailNotValid}>Email</Label>
 ```
 
-  
 NOTE: You should not pass built-in props to apply dynamic style. To work around this you can add a $ sign as prefix to the prop name. You also add the $sign wherever you are using the prop.
 
 We can also handle media queries, pseudo selectors and nested css rules with styled components. For selectors and nested rule like:
@@ -405,7 +401,7 @@ You can also altogether ignore the & symbol if you want to target only the main 
   }
 ```
 
-We use the white space after the & to target the child element.   
+We use the white space after the & to target the child element.  
 The complete styled header will look like:
 
 ```javaScript
@@ -455,7 +451,6 @@ For pseudo selectors also we can do the same. But here we should not use the whi
   }
 ```
 
-  
 If you only are only using a styled component in a single file storing defining that component in the same file is fine. But if we want to reuse components you can create separate component files. For example we can create a separate button component like:
 
 ```javaScript
@@ -541,14 +536,14 @@ import { CustomInput } from "./Input";
       </ControlContainer>
 ```
 
-We can use this pattern for non styled components also. As a react developer you should try to reuse components. 
+We can use this pattern for non styled components also. As a react developer you should try to reuse components.
 
-The advantages of using styled components are they are relatively easy to add in the application. You can continue thinking in react because it let's us create configurable style functions. They are also scoped therefore there will not be any css rule clash.   
-The disadvantages are we still need to know css to style. There is also no separation between css and react code. You may end up with many relatively small wrapper components. 
+The advantages of using styled components are they are relatively easy to add in the application. You can continue thinking in react because it let's us create configurable style functions. They are also scoped therefore there will not be any css rule clash.  
+The disadvantages are we still need to know css to style. There is also no separation between css and react code. You may end up with many relatively small wrapper components.
 
-Tailwind is a popular choice for styling web applications. It works really well with react. Tailwind is all about adding tiny utility classes to style the html elements. It will also setup some base style which will affect the overall document. You can refer the official tailwind documentation for integration steps with react with vite. We can additionally install the tailwind css intellisense extension for vs code to get auto completion for tailwind css. 
+Tailwind is a popular choice for styling web applications. It works really well with react. Tailwind is all about adding tiny utility classes to style the html elements. It will also setup some base style which will affect the overall document. You can refer the official tailwind documentation for integration steps with react with vite. We can additionally install the tailwind css intellisense extension for vs code to get auto completion for tailwind css.
 
-Even if we are using tailwind we can set up our own css rules in index.css. We can create utility classes in css for implementing styling. For example if we have a custom font like google font and we want to apply it to our components, we can go to the `tailwind.config.js` file and under the `theme `key we can find the `extends `key. Inside of this extends key we can add the `fontFamily `key then register a new font family with any name of your choice. For this key we should specify an array as the value, inside of the array we should specify the font family in double quotes wrapped inside of single quotes. For the fallback font we can specify it in just single quotes. This syntax is required by tailwind. The example will look like:  
+Even if we are using tailwind we can set up our own css rules in index.css. We can create utility classes in css for implementing styling. For example if we have a custom font like google font and we want to apply it to our components, we can go to the `tailwind.config.js` file and under the `theme `key we can find the `extends `key. Inside of this extends key we can add the `fontFamily `key then register a new font family with any name of your choice. For this key we should specify an array as the value, inside of the array we should specify the font family in double quotes wrapped inside of single quotes. For the fallback font we can specify it in just single quotes. This syntax is required by tailwind. The example will look like:
 
 ```javaScript
  theme: {
@@ -569,12 +564,12 @@ After adding this we can use `font-title` css class in our project. The above co
 }
 ```
 
-Here we are not specifying the font family anywhere because tailwind 4 has a concept called name space prefixes. When tailwind sees a variable with a particular prefix it will automatically map it to the corresponding css property. There are different prefixes such as:  
+Here we are not specifying the font family anywhere because tailwind 4 has a concept called name space prefixes. When tailwind sees a variable with a particular prefix it will automatically map it to the corresponding css property. There are different prefixes such as:
 
 1. `**--font-***`: Anything starting with this is registered as a **Font Family**.
 2. `**--color-***`: Anything starting with this is registered as a **Color**.
 3. `**--spacing-***`: Anything starting with this is registered as a **Spacing** value (padding, margin, etc.).  
-By this way we are directly writing css code so there is no translation for javascript to CSS. Also we can use these names as variables in normal css files, like `var(--font-title);`
+   By this way we are directly writing css code so there is no translation for javascript to CSS. Also we can use these names as variables in normal css files, like `var(--font-title);`
 
 Tailwind has a solution for media queries. In the official docs under responsive design we can see that there are certain prefixes that we can add to the utility classes to only apply them if you have a minimum screen width. For example if we add `md:` infront of this width class, this width class will be only applied to the medium class screens. We can set up default utility classes and and use these special prefixes for classes which should take effect based on the screen width.  
 Similarly for pseudo selectors such as hover we have the `hover:` prefix. The class defined after this prefix will be applied only if the users hovers over the element. For each utility class that we want to apply the prefixes we should specify them separately.
@@ -603,22 +598,22 @@ export default function Input({ label, invalid, ...props }) {
 Make sure that we add a leading space when appending classes to the variable.
 
 We can also apply gradients using tailwind utility classes. For example we can use:  
-`bg-gradient-to-b from-stone-700 to-stone-800`   
-Will set a gradient from top to bottom with starting color of stone 700 and ending color of stone-800\. We can refer the official documentation for more details.   
+`bg-gradient-to-b from-stone-700 to-stone-800`  
+Will set a gradient from top to bottom with starting color of stone 700 and ending color of stone-800\. We can refer the official documentation for more details.  
 We can set the `mx-auto` utility provided by tailwind to center an element horizontally.
 
-When working with CSS we will end up with a lot of CSS classes for some elements. This means that is there more code to add to you JSX code. Tailwind works really well with react because we can create reusable utility components. The advantage of tailwind is that we don't need to really know CSS to use it. We can create applications rapidly because styling elements is fairly easy and quick with tailwind. We can also avoid style clashes between components because you don't define any CSS rule on your own. Tailwind is also highly configurable and customizable. But the disadvantages are that you will end up with relatively long class names. Any styling changes requires editing the JSX code. You might also end up with a lot of relatively smaller wrapper components which can be quite cumbersome at times. 
+When working with CSS we will end up with a lot of CSS classes for some elements. This means that is there more code to add to you JSX code. Tailwind works really well with react because we can create reusable utility components. The advantage of tailwind is that we don't need to really know CSS to use it. We can create applications rapidly because styling elements is fairly easy and quick with tailwind. We can also avoid style clashes between components because you don't define any CSS rule on your own. Tailwind is also highly configurable and customizable. But the disadvantages are that you will end up with relatively long class names. Any styling changes requires editing the JSX code. You might also end up with a lot of relatively smaller wrapper components which can be quite cumbersome at times.
 
-Not all errors lead to error messages. You might also have logical errors in your code. Finding these logical errors are trickier because there will not be an error message. We should think logically and identify these errors and fix them. To identify the origin of these errors we can also use the developer tools of the browser. In the developer tools under sources we can see the folder structure of the project. We can open these files and view the JSX code that has been written in these files. Apart from this we can add break points by clicking on the line number. Once you add a breakpoint the code execution stops at that point when the control reaches that line. We can hover over variables to see the values at that point in time. With the step into button we can jump into a function that is about to be executed. With step outside function we can jump out of a function. The step over button allows us to go to the next statement in the file. 
+Not all errors lead to error messages. You might also have logical errors in your code. Finding these logical errors are trickier because there will not be an error message. We should think logically and identify these errors and fix them. To identify the origin of these errors we can also use the developer tools of the browser. In the developer tools under sources we can see the folder structure of the project. We can open these files and view the JSX code that has been written in these files. Apart from this we can add break points by clicking on the line number. Once you add a breakpoint the code execution stops at that point when the control reaches that line. We can hover over variables to see the values at that point in time. With the step into button we can jump into a function that is about to be executed. With step outside function we can jump out of a function. The step over button allows us to go to the next statement in the file.
 
-These allows us to walk through the code step by step and see how things are getting executed. 
+These allows us to walk through the code step by step and see how things are getting executed.
 
 Apart from these react also have some features that helps you to identify errors in the development stage. This is called the strict mode. Usage of strict mode begins from the index.jsx file though you can also enable them for parts of your application. To add this we can simply import the StrictMode component from react. Like:  
 `import {StrictMode} from "react";`
 
-It is a component that is meant to be wrapped around other components. We can wrap our App component in the `StrictMode `component. StrictMode does some things in the backend to help us identify the problems in the application early on. The most important thing that it does is that it will run every component function twice. It only does this during development. When every component is executed twice to catch errors which impacts the UI when data is changed. It will not fix the problem or tell us what or where is the problem. 
+It is a component that is meant to be wrapped around other components. We can wrap our App component in the `StrictMode `component. StrictMode does some things in the backend to help us identify the problems in the application early on. The most important thing that it does is that it will run every component function twice. It only does this during development. When every component is executed twice to catch errors which impacts the UI when data is changed. It will not fix the problem or tell us what or where is the problem.
 
-We can also install `React Developer Tools` extension for the browser to make the debugging of the react apps easier. After installing this you can see 2 new tabs in the browser devtools. The `profiler `is primarily used for finding and fixing performance issues in the react application. In the components tab we can see the components tree of the application. You can hover over the components to highlight them on the browser window. If you click on a component you can see more details about that component. You can see which all props a component accepts. You can edit the props and the changes will be reflected in the UI. If a component manages state we can also see that under the hooks section. We can also edit the state values here. 
+We can also install `React Developer Tools` extension for the browser to make the debugging of the react apps easier. After installing this you can see 2 new tabs in the browser devtools. The `profiler `is primarily used for finding and fixing performance issues in the react application. In the components tab we can see the components tree of the application. You can hover over the components to highlight them on the browser window. If you click on a component you can see more details about that component. You can see which all props a component accepts. You can edit the props and the changes will be reflected in the UI. If a component manages state we can also see that under the hooks section. We can also edit the state values here.
 
 Consider the following scenario. If you have an paragraph, an input field and a button. When you enter a value in the field and click on the submit button you need to set the text in the paragraph to the entered text. For this in react we need to have 2 states. The first state for storing the value from every keystroke to a state, and the second state for determining weather the button was clicked or not for displaying the value. The code will look like:
 
@@ -672,21 +667,21 @@ export default function Player() {
 }
 ```
 
-In the above code we are using ref to get the value from the input element. When the button is clicked the state which stores the player name will be set. This value is displayed in the paragraph tag. This way we avoid the state updates on every keystroke, also we are using a single state. We don't need any additional state for checking if the button is clicked because when the button is clicked the value will be set to the state from the ref. 
+In the above code we are using ref to get the value from the input element. When the button is clicked the state which stores the player name will be set. This value is displayed in the paragraph tag. This way we avoid the state updates on every keystroke, also we are using a single state. We don't need any additional state for checking if the button is clicked because when the button is clicked the value will be set to the state from the ref.
 
 When using the above approach the inputs are not instantly reflected on the screen (because we are not using the `onChange `prop in the input). But this way is more efficient and leads to much leaner code.
 
 As we have seen earlier react promotes writing declarative code instead of imperative code. This means that the developer is not responsible for directly manipulating the DOM. We let react do that. For example in the above example if we want to reset the input field after the value is set we can use like:  
-`playerName.current.value="";`   
-But the above is imperative code because we are setting the value of an element directly in DOM. This is a violation. But in this scenario it is acceptable because we are using it just clear the input, it is not connected to any other state objects, so there are no unnecessary side effects.   
-NOTE: Be careful when using refs to read and manipulate all kinds of elements on the page, it is not the principle of react. But it can be useful in the scenarios like the above example. 
+`playerName.current.value="";`  
+But the above is imperative code because we are setting the value of an element directly in DOM. This is a violation. But in this scenario it is acceptable because we are using it just clear the input, it is not connected to any other state objects, so there are no unnecessary side effects.  
+NOTE: Be careful when using refs to read and manipulate all kinds of elements on the page, it is not the principle of react. But it can be useful in the scenarios like the above example.
 
-There are a couple of differences between refs and states. If we try to output the value of the ref onto the element it won't work. Because when the component is rendered for the first time the connection through the ref prop will not take place, so the value of the reference will be undefined. In the next render cycle it will establish the connection between the field and we will be able to read the value. The main difference between ref and state is that in case of ref when the value changes the component is not re executed. But for state whenever the value of the state changes the component function is executed again.   
-We should use states for value changes that should be directly reflected in the UI. You don't need to use state for values that are used behind the scenes and have no direct UI impact. 
+There are a couple of differences between refs and states. If we try to output the value of the ref onto the element it won't work. Because when the component is rendered for the first time the connection through the ref prop will not take place, so the value of the reference will be undefined. In the next render cycle it will establish the connection between the field and we will be able to read the value. The main difference between ref and state is that in case of ref when the value changes the component is not re executed. But for state whenever the value of the state changes the component function is executed again.  
+We should use states for value changes that should be directly reflected in the UI. You don't need to use state for values that are used behind the scenes and have no direct UI impact.
 
-We can use refs to gain direct DOM access 
+We can use refs to gain direct DOM access
 
-For example you have a react component, it has a button and a couple of paragraph elements. When the user clicks on the button it should start a timer, the starting of the timer should be shown in the screen. Once the timer is started the text of the button should change to stop the timer. We can tackle the first issue with a state because when the data of the state changes the component will re render to display the changes. We can also use the click event of the button to set the state. But the problem becomes when we want to stop the timer when the user click on the stop button. The example code will look like:  
+For example you have a react component, it has a button and a couple of paragraph elements. When the user clicks on the button it should start a timer, the starting of the timer should be shown in the screen. Once the timer is started the text of the button should change to stop the timer. We can tackle the first issue with a state because when the data of the state changes the component will re render to display the changes. We can also use the click event of the button to set the state. But the problem becomes when we want to stop the timer when the user click on the stop button. The example code will look like:
 
 ```javaScript
 import { useState } from "react";
@@ -694,12 +689,12 @@ import { useState } from "react";
 export default function TimerChallenge({ title, targetTime }) {
     const [timerStarted, setTimerStarted] = useState(false);
     const [timerExpired, setTimerExpired] = useState(false);
-    
+
     function handleStart() {
         setTimeout(() => setTimerExpired(true), targetTime * 1000);
         setTimerStarted(true);
     }
-    
+
     return <section className="challenge">
         <h2>{title}</h2>
         {timerExpired && <p>You Lost!</p>}
@@ -712,7 +707,7 @@ export default function TimerChallenge({ title, targetTime }) {
 }
 ```
 
-Javascript has a `clearTimeout()` function to clear timers, but it needs a pointer at that timer(the id of the timer). Such a pointer is returned by the `setTimeout()` method, we can store this in a variable. We can then pass this variable as the argument to the `clearTimeout()` function.   
+Javascript has a `clearTimeout()` function to clear timers, but it needs a pointer at that timer(the id of the timer). Such a pointer is returned by the `setTimeout()` method, we can store this in a variable. We can then pass this variable as the argument to the `clearTimeout()` function.  
 If we use a variable in here and try to stop the timer function it will not work, because whenever the state of the component changes the component function re executes thus creating a new reference to the variable. To fix this we can place the variable definition outside of the component function. This will cause one additional problem, if there are multiple components (which uses the same function) which has the set timeout and clear timeout functions and we are placing the timer reference outside of the component function, the variable will be shared by the different instances of the component. This might lead to unexpected behavior because the previously set timer will be thrown away.
 
 In this case instead of variables we can use refs to store the pointers to timer functions. We can use refs to manage any kind of values. We can set the timer pointer to the ref's current property. We can also clear the timeout with the current property of the timer. Since this is created inside of the component function this will be component instance specific. Every instance of the component will get it's own ref. But unlike the variables this reference will not be cleared when the component function re executes. React will store these ref values behind the scenes and make sure that they don't get lost as the component function re executes. The code will look like:
@@ -753,7 +748,7 @@ export default function TimerChallenge({ title, targetTime }) {
 }
 ```
 
-This is another use case for refs. If you have a value that needs to be managed but it is not a state because it has no direct impact on the UI and we need to ensure that the value is not changed when the component is re executed, we can use refs. 
+This is another use case for refs. If you have a value that needs to be managed but it is not a state because it has no direct impact on the UI and we need to ensure that the value is not changed when the component is re executed, we can use refs.
 
 In the native html we have the dialog element which can be used for creating components such as modals. Inside the modal if we use a form element with `method="dialog"` attribute and inside this form we create a button, then if we press that button the form will close. We don't need to use any extra javascript for this. Example:
 
@@ -774,7 +769,7 @@ By default the dialog element is invisible. It can be made visible by setting th
 
 We can also set the backdrop for the dialog element. But we cannot set the backdrop if we use the open prop with the dialog to force open the dialog. Instead we need to programmatically open the dialog with the help of javascript. We can refs for this also. We can pass refs as props to components. We can define the ref in the parent component and pass it to as prop to a child component, then in the child component we can set the ref for an element. In case of our dialog also we can do the same in the parent component we can define a ref and pass it to the component which have the dialog element. Then for the dialog element we can set the ref property. This way inside of the parent component we can call the showModal() method which is a method provided by the javascript to open the dialog. We can use like `dialogRef.current.showModal()` to open the modal. This method will show the modal on the screen.
 
-If we are passing the open we needed to render the dialog component conditionally but this way we can render the component but it will not be visible, it will only be visible through the javascript method call. This will also have a nice backdrop which is provided automatically.   
+If we are passing the open we needed to render the dialog component conditionally but this way we can render the component but it will not be visible, it will only be visible through the javascript method call. This will also have a nice backdrop which is provided automatically.  
 Prior to React 19 we couldn't pass refs as regular props. For older versions if we needed to pass refs to a component we needed to use the `forwardRef() `function which is provided by react. We then needed to wrap our component function in this function. This function will return the adjusted version of this component which should be stored in a constant with the same name as the component. You will then need to export the adjusted component. The component function which was wrapped in `forwardRef()` will now automatically receive a prop apart from the props we have defined. This is the ref prop. The component in the above example will now look like:
 
 ```javaScript
@@ -795,9 +790,9 @@ export default ResultModal;
 
 This approach is not required for react versions greater than 19.
 
-In the previous approach when we forwarded refs has a small potential flaw. The problem with that is because the entire parent component needs to know if the ref is attached to the child element. For smaller projects this is not a problem. For bigger react projects components will be written by multiple developers. Therefore it might be preferrable to build the child component such that it exposes it's own function with out the help of a ref outside of that component (Though technically we use ref the child controls what is shared). We can call this function from parent element instead of exposing the internal reference object for various operations. This is achieved by a special hook which we use in the component which want's to expose such a function(child component). It is the `useImperativeHandle `hook. We can call this hook in the component which want's to expose such a function to define properties and methods defined on this component from outside this component. 
+In the previous approach when we forwarded refs has a small potential flaw. The problem with that is because the entire parent component needs to know if the ref is attached to the child element. For smaller projects this is not a problem. For bigger react projects components will be written by multiple developers. Therefore it might be preferrable to build the child component such that it exposes it's own function with out the help of a ref outside of that component (Though technically we use ref the child controls what is shared). We can call this function from parent element instead of exposing the internal reference object for various operations. This is achieved by a special hook which we use in the component which want's to expose such a function(child component). It is the `useImperativeHandle `hook. We can call this hook in the component which want's to expose such a function to define properties and methods defined on this component from outside this component.
 
-We don't use this hook quite often, and in most cases we use only props. This hook requires 2 arguments, the first one is a ref object. For versions later than React 19 we can use the ref prop which comes as argument for the component function as argument to this method. Incase if we use the `forwardRef `we can use the ref object coming as the argument. The second argument is a function that returns an object which groups all the properties and methods exposed by that component to other components. The naming of these are up to the users. The idea behind this approach is to detach the ref from outside of the component, so we need to use the `useRef `hook internally for the component. We use this ref as prop to the element which we want to reference. Inside the method of the imperative hook we can create a function which will access or modify the element. Here the parent never directly access the internal ref of the child. It only calls methods you explicitly expose. 
+We don't use this hook quite often, and in most cases we use only props. This hook requires 2 arguments, the first one is a ref object. For versions later than React 19 we can use the ref prop which comes as argument for the component function as argument to this method. Incase if we use the `forwardRef `we can use the ref object coming as the argument. The second argument is a function that returns an object which groups all the properties and methods exposed by that component to other components. The naming of these are up to the users. The idea behind this approach is to detach the ref from outside of the component, so we need to use the `useRef `hook internally for the component. We use this ref as prop to the element which we want to reference. Inside the method of the imperative hook we can create a function which will access or modify the element. Here the parent never directly access the internal ref of the child. It only calls methods you explicitly expose.
 
 **This creates clear separation of concerns and prevents accidental misuse**. In the parent object we will call this method to modify the element. The example code will look like:
 
@@ -842,12 +837,12 @@ export default function ResultModal({result, targetTime, ref}){
 </dialog>;
 ```
 
-Here the ref defined in the parent component which is passed as prop to the child component. In the child component it's own ref is connected with the prop with the help of `useImperative `hook. Inside of the hook we call the method on the internal ref object. 
+Here the ref defined in the parent component which is passed as prop to the child component. In the child component it's own ref is connected with the prop with the help of `useImperative `hook. Inside of the hook we call the method on the internal ref object.
 
-Portals allows us to place the elements in the component to placed in a different location in the dom. In some cases some components are deeply nested inside of the dom. We might need to change the position of these for accessibility reasons.   
-For using this we should import the `createPortal `function from the `react-dom` module. The `react-dom` module acts as bridge betweeen react and DOM. The createPortal() method takes in 2 arguments, the first is the jsx code that needs to be placed somewhere in the dom. And the second one is an html element to which the code needs to be placed, we need to use an element selector or id selector and place it as the second argument. We can use the `document `api provided by javascript to use methods like `getElementById`, `getElementsByClassName `etc. The return of the component should return a `createPoral `function with the above mentioned arguments. This is similar to the main.jsx file where we can see that the it imports the `ReactDom `module from `reat-dom` 
+Portals allows us to place the elements in the component to placed in a different location in the dom. In some cases some components are deeply nested inside of the dom. We might need to change the position of these for accessibility reasons.  
+For using this we should import the `createPortal `function from the `react-dom` module. The `react-dom` module acts as bridge betweeen react and DOM. The createPortal() method takes in 2 arguments, the first is the jsx code that needs to be placed somewhere in the dom. And the second one is an html element to which the code needs to be placed, we need to use an element selector or id selector and place it as the second argument. We can use the `document `api provided by javascript to use methods like `getElementById`, `getElementsByClassName `etc. The return of the component should return a `createPoral `function with the above mentioned arguments. This is similar to the main.jsx file where we can see that the it imports the `ReactDom `module from `reat-dom`
 
-On the `ReactDom `we are calling the `createRoot()` method which has the position inside of the html where the react components should be rendered. The functionalities of the component does not change even if the rendering position of the component changes. 
+On the `ReactDom `we are calling the `createRoot()` method which has the position inside of the html where the react components should be rendered. The functionalities of the component does not change even if the rendering position of the component changes.
 
 **NOTE**: The document selector selects the actual html element in the real dom.
 
@@ -879,20 +874,20 @@ export default function ResultModal({ targetTime, remainingTime, onReset, ref })
 
 Portals are suitable for use cases like the above where we need to render the elements in a different place other than the place it is defined.
 
-We can use \[\] to specify custom values for tailwind classes. For example:   
+We can use \[\] to specify custom values for tailwind classes. For example:  
 `w-[35rem]` will set the width to 35rem. Tailwind will generate this class for you.
 
 Prop Drilling is the process of sending props through multiple layer of components. The intermediary components may not necessarily need the prop, they just forward the prop to the child component.
 
 If you have an input field which is binded to a state and if you define the state like:  
-` const [enteredTask, setEnteredTask] = useState();` 
+` const [enteredTask, setEnteredTask] = useState();`
 
 Initially the value of the state will be undefined. So whenever the user enters the value in the input field it suddenly changes to string value. React will throw a warning like:  
-`A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component` 
+`A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component`
 
 To avoid this warning we should initialize the state as an empty string.
 
-The more complex your app, the more components you will use. These components are structured in a component tree. In most cases you might need to manage states, we might need to lift the states up so that the state can be shared between components such that the state defined in a component might be updated by another component. We used props to share these states and update these states. If your application is complex you might need to pass these props through multiple layers of components, which is called **prop drilling**. In most cases the child components may not actually don't need the state data but are simply passing it further down the component tree. This can be a problem because it makes these components less re usable. The components which requires the state must be placed in parts of the component tree where it can access the state. This also means that you will need to write a lot of boiler plate code. 
+The more complex your app, the more components you will use. These components are structured in a component tree. In most cases you might need to manage states, we might need to lift the states up so that the state can be shared between components such that the state defined in a component might be updated by another component. We used props to share these states and update these states. If your application is complex you might need to pass these props through multiple layers of components, which is called **prop drilling**. In most cases the child components may not actually don't need the state data but are simply passing it further down the component tree. This can be a problem because it makes these components less re usable. The components which requires the state must be placed in parts of the component tree where it can access the state. This also means that you will need to write a lot of boiler plate code.
 
 One possible way to fix this problem is to embrace **component composition**. This is part of a solution but we might need to do some additional things in most cases. For example if we have a shop component which is the child of the app component. The shop component has a child which is the product component. We have a function in the app component which will add the item to the cart called `handleAddItemToCart `(because the state is managed in the app component). We need to pass the this function pointer as prop to the shop component and then later to the product component. We can modify the app component such that we can directly move the product component into the app component by wrapping it inside of the shop component. This way the product component can directly access the `handleAddItemToCart `method. Inside the shop component we should accept the children prop and place the children where the product component was. The code will look like:
 
@@ -921,10 +916,10 @@ export default function Shop({ }) {
 }
 ```
 
-This way we are embracing component composition and we are using the shop component to wrap around the list of products and we were able to get rid of one layer of component nesting thus removing part of the prop drilling problem.   
-The down side of the above approach is that you typically don't want to use this approach for all your component layers. If you do so all the components and it's code will end up in your app component. 
+This way we are embracing component composition and we are using the shop component to wrap around the list of products and we were able to get rid of one layer of component nesting thus removing part of the prop drilling problem.  
+The down side of the above approach is that you typically don't want to use this approach for all your component layers. If you do so all the components and it's code will end up in your app component.
 
-A more elegant way of solving the prop drilling problem is to use the **React's Context API**. Context API is built into react. It makes sharing data across components and component layers easy. The idea behind the context api in react is that you create a context value and you provide that value that you wrap this context around multiple components, possibly around all components of your app. The great thing about the context value that you provide to multiple components is that it can be easily connected to states. We can connect the react state to the context value. This way we can get rid of all the props. The context value which is linked to state is provided to all components of our application. The components that needs access or need to modify the state can directly react out to the context and that state. 
+A more elegant way of solving the prop drilling problem is to use the **React's Context API**. Context API is built into react. It makes sharing data across components and component layers easy. The idea behind the context api in react is that you create a context value and you provide that value that you wrap this context around multiple components, possibly around all components of your app. The great thing about the context value that you provide to multiple components is that it can be easily connected to states. We can connect the react state to the context value. This way we can get rid of all the props. The context value which is linked to state is provided to all components of our application. The components that needs access or need to modify the state can directly react out to the context and that state.
 
 It is a common convention to create a folder called `store `inside of the src folder to store the files which has the context values. Inside this folder. Inside this folder we can create jsx files with any name. We can create a context value by using the `createContext `function from react. When you call the function it will create a context value for you. We can store it in a constant variable. When naming this variable we must follow the react components naming convention, because the `createContext `function will return a react component. We can pass the initial value as argument to this function. We can use any type of values for this. After doing these we must provide the context to the application. For this we must export the context variable which was created using the `createContext `method. The code will look like:
 
@@ -958,16 +953,16 @@ import { CartContext } from './store/shopping-cart-context.jsx';
 
 Using a context value to wrap around components will work if we are using React 19 or above. But this will not work with older versions of react.
 
-In the older versions we must access the Provider property to wrap around the components. In other words we should wrap the components which wants to use the context should be wrapped with the `ContextName.Provider`. In our case we can use like: 
+In the older versions we must access the Provider property to wrap around the components. In other words we should wrap the components which wants to use the context should be wrapped with the `ContextName.Provider`. In our case we can use like:
 
-`<CartContext.Provider>....</CartContext.Provider>` 
+`<CartContext.Provider>....</CartContext.Provider>`
 
 This approach will also work for React 19\. Here what we are doing is accessing a property from the object. This property holds a react component so we can access it like this. The value stored inside the context will be accessible but the values are created by react.  
 The above steps shows how we can provide a context, the next step is to consume the context.
 
-For consuming the context we must import the context object that we have created inside of the file in the store folder to where we must consume the context. To get a hold of the values inside of the context we must use 2 react hooks. The first one is `useContext `which let's us consume the context. We would use this hook by calling it inside of the component function where we are consuming the context. to this hook we must pass our context object as an argument. We will get a value back from the useContext() method which we can store in a constant or variable object. This variable will be used to get a hold of the values inside of the context.   
+For consuming the context we must import the context object that we have created inside of the file in the store folder to where we must consume the context. To get a hold of the values inside of the context we must use 2 react hooks. The first one is `useContext `which let's us consume the context. We would use this hook by calling it inside of the component function where we are consuming the context. to this hook we must pass our context object as an argument. We will get a value back from the useContext() method which we can store in a constant or variable object. This variable will be used to get a hold of the values inside of the context.
 
-This is one way of getting a hold of values inside of the context. There is also an alternative way. For this we can use the `use `hook from react. It is used in the same way as `useContext`. The `use `hook is a bit more flexible than the `useContext `hook. The `use `hook allows us to wrap it inside of blocks inside of the component(if block). Whereas normally you are not allowed to use react hooks inside of if blocks and for loops. But the `use `hook is only available in React 19 and above. In older versions we should use the `useContext `hook. The `useContext `hook is available in react 19 and above also. 
+This is one way of getting a hold of values inside of the context. There is also an alternative way. For this we can use the `use `hook from react. It is used in the same way as `useContext`. The `use `hook is a bit more flexible than the `useContext `hook. The `use `hook allows us to wrap it inside of blocks inside of the component(if block). Whereas normally you are not allowed to use react hooks inside of if blocks and for loops. But the `use `hook is only available in React 19 and above. In older versions we should use the `useContext `hook. The `useContext `hook is available in react 19 and above also.
 
 After getting the context using any of the above methods we can access the value stored inside of the context using the . operator. The code will look like:
 
@@ -984,7 +979,7 @@ const cartCtx = useContext(CartContext);
 
 After doing the above steps when we try to run the application we will get an error like:
 
-`` The `value` prop is required for the `<Context.Provider>`. Did you misspell it or forget to pass it? ``   
+``The `value` prop is required for the `<Context.Provider>`. Did you misspell it or forget to pass it?``  
 Even though we have initialized the value inside of the context, this value will be used only if a component which was not wrapped by the provider component tries to access the context value. To fix the issue we must pass a value prop when wrapping other components with the context object. Inside of the value prop we must pass the value which was initialized in the context file. So the correct way is:
 
 ```javaScript
@@ -1022,7 +1017,6 @@ function App() {
 
 This way we can link the context to the state. This way we can only read the state from context, for editing the state through context does not work yet. We should also be able to edit the state through context. We can also pass functions to context object. For example if we want to add items to the cart we need a function to add items to the state. For this we can create a function and set it as a property to the context. The code will look like:
 
-  
 ```javaScript
   const ctxValue = {
     items: shoppingCart.items,
@@ -1058,9 +1052,9 @@ The `useContext `hook is the standard way to get data from the context. But ther
 
 When you access a context value in a component and if that value changes, then that component function that accesses the value will get re executed by react as it is using some internal state that was updated or if it's parent component gets executed again. Just as a component function gets re executed by react in such situations it also re executes the components where the components use the `useContext `hook. That is which all components that have access to the context they are all re executed when the value in the context is changed.
 
-You should separate the functions which modifies the state from the App component to make it more lean. There is an alternate react pattern we handle all the context related operations to separate context component. We have created a JSX file in the store to create a context. Inside this file we can create functions and share it. In our case we can create a `CartComponentProvider `function and export it. The name can be chosen according to your wish. The idea behind this is to manage all the state related and context related code to this function. We can place all the code which creates the state, all the operations on the state till where we construct the context value. From this function we must return the Context.Provider component. In our case we should return the `CartContext.Provider`. 
+You should separate the functions which modifies the state from the App component to make it more lean. There is an alternate react pattern we handle all the context related operations to separate context component. We have created a JSX file in the store to create a context. Inside this file we can create functions and share it. In our case we can create a `CartComponentProvider `function and export it. The name can be chosen according to your wish. The idea behind this is to manage all the state related and context related code to this function. We can place all the code which creates the state, all the operations on the state till where we construct the context value. From this function we must return the Context.Provider component. In our case we should return the `CartContext.Provider`.
 
-Along with that we should set the value prop to the context value that we have constructed. Since this component is being wrapped around other components, we should accept the children prop to the function and pass it along to the component that is being returned from the function. In the App.jsx we should import the context provider function instead of the context object. The Function will look like:  
+Along with that we should set the value prop to the context value that we have constructed. Since this component is being wrapped around other components, we should accept the children prop to the function and pass it along to the component that is being returned from the function. In the App.jsx we should import the context provider function instead of the context object. The Function will look like:
 
 ```javaScript
 export default function CartContextProvider({children}) {
@@ -1084,7 +1078,7 @@ export default function CartContextProvider({children}) {
 }
 ```
 
-The App.jsx will look like:  
+The App.jsx will look like:
 
 ```javaScript
 import Header from './components/Header.jsx';
@@ -1093,7 +1087,7 @@ import Product from './components/Product.jsx';
 import { DUMMY_PRODUCTS } from './dummy-products.js';
 import CartContextProvider from './store/shopping-cart-context.jsx';
 function App() {
-  
+ 
   return (
     <CartContextProvider>
       <Header/>
@@ -1112,14 +1106,14 @@ export default App;
 ```
 
 Now the entire App.jsx code became much more leaner and cleaner.  
-**NOTE**: You should wrap the JSX code returned from App.jsx inside of parenthesis if it spans across multiple lines. 
+**NOTE**: You should wrap the JSX code returned from App.jsx inside of parenthesis if it spans across multiple lines.
 
-When building complex applications context can be powerful feature. But the functions that update the state can get complex and may be harder to read. When handling complex states such as objects and arrays we will need to update the state based on the previous state by passing functions to the setState method. Instead of using the `useState `hook for creating and managing state we can use another hook provided by react which is `useReducer()`. A reducer is a function reduces one or more complex values to a simpler one. There is also a built in reduce method in javascript which can be used on arrays which let's us perform operations on it and return the result as a single value. The idea behind the useReducer hook is the same as the reduce method, which is to transform one or more complex value to a simpler one for state management purpose. To use this first we need to import it from react. Inside of the react component we will execute the `useReducer `hook just like other hooks in react. 
+When building complex applications context can be powerful feature. But the functions that update the state can get complex and may be harder to read. When handling complex states such as objects and arrays we will need to update the state based on the previous state by passing functions to the setState method. Instead of using the `useState `hook for creating and managing state we can use another hook provided by react which is `useReducer()`. A reducer is a function reduces one or more complex values to a simpler one. There is also a built in reduce method in javascript which can be used on arrays which let's us perform operations on it and return the result as a single value. The idea behind the useReducer hook is the same as the reduce method, which is to transform one or more complex value to a simpler one for state management purpose. To use this first we need to import it from react. Inside of the react component we will execute the `useReducer `hook just like other hooks in react.
 
 It will give you an array with exactly 2 elements The first element is the state, the second value will be a `dispatch `function which allows you to dispatch actions which will be handled by a to be defined reducer function. We can provide any name to to dispatch function. We need to define the reducer function that will get triggered by dispatching values and it will then produce a new state. We should define the reducer function outside of the component function because it should not be re created when the component function executes. Also, it don't need direct access to the values defined or updated in the component function. The reducer function should accept 2 parameters a `state `parameter and an `action `parameter. The function will be executed by react when you dispatch an action. The action you dispatch with the dispatch function will be action you receive on the reducer function.
 
- The state we get in the reducer function will be the latest state snapshot of the state managed by `useReducer`. From the reducer function you should return the updated state. We need to connect the reducer function function with the `useReducer `hook, to achieve this you will pass a pointer as a first argument to `useReducer`. The second value let's you set an initial value for the state which will be used when the state was never been updated yet.   
-The code will now look like:  
+The state we get in the reducer function will be the latest state snapshot of the state managed by `useReducer`. From the reducer function you should return the updated state. We need to connect the reducer function function with the `useReducer `hook, to achieve this you will pass a pointer as a first argument to `useReducer`. The second value let's you set an initial value for the state which will be used when the state was never been updated yet.  
+The code will now look like:
 
 ```javaScript
 function shoppingCartReducer(state, action){
@@ -1166,9 +1160,9 @@ function shoppingCartReducer(state, action) {
 ```
 
 We should not modify the state data directly instead we should copy the data into a variable and modify it from there.  
-You can also use the `useReducer `hook in other components independent of the context hook. 
+You can also use the `useReducer `hook in other components independent of the context hook.
 
-Side effects are tasks that need to be executed in your application in order for the app to work correctly but tasks that don't impact the current component render cycle. For example if you have a list of tourist places and you want to sort the places according to the distance from your current location. For this we need to get the user's location as soon as possible, so for that we can place it inside of the app component. We can use the `navigator `object exposed by the browser to our javascript code. This globally available object has a `geolocation `object which has a `getCurrentPosition()` method which we can call to get the current position of the user of the website. When you call this method the user will be asked to allow the location permission, once the permission is granted it will fetch the location. Fetching the position can take some time, so for this method it needs a callback function as argument which will be executed by the browser once the location can be fetched. 
+Side effects are tasks that need to be executed in your application in order for the app to work correctly but tasks that don't impact the current component render cycle. For example if you have a list of tourist places and you want to sort the places according to the distance from your current location. For this we need to get the user's location as soon as possible, so for that we can place it inside of the app component. We can use the `navigator `object exposed by the browser to our javascript code. This globally available object has a `geolocation `object which has a `getCurrentPosition()` method which we can call to get the current position of the user of the website. When you call this method the user will be asked to allow the location permission, once the permission is granted it will fetch the location. Fetching the position can take some time, so for this method it needs a callback function as argument which will be executed by the browser once the location can be fetched.
 
 The callback will automatically receive a `position `object from which we can extract the `latitude `and `longitude`. The latitude and longitude are nested inside the `coords `object which we need to extract using the `.` operator. The code will look like:
 
@@ -1193,8 +1187,8 @@ useEffect(() => {
   }, []);
 ```
 
-This will fix the infinite loop problem.   
-The idea behind `useEffect `is that the function we passed as argument will be executed by react after component function has been executed. 
+This will fix the infinite loop problem.  
+The idea behind `useEffect `is that the function we passed as argument will be executed by react after component function has been executed.
 
 That is the component function will be executed and display the JSX code in the browser, after this only the function passed in the `useEffect `will be executed. Here when we update the state the component function will be executed again, so theoretically we might assume that the same infinite loop situation will repeat, but here is the part played by the dependency array. If you define these dependencies array, then react will take a look at the dependency array and the dependencies specified there, and it will only execute the function specified in the first argument only if the dependency value is changed. If we pass an empty array, those dependencies cannot change. Therefore react actually never re execute this effect function, it will only execute it once after the component function is executed for the first time. If you omit the dependency array the effect function will execute on every component render cycle and it will cause an infinite loop.
 
@@ -1212,9 +1206,9 @@ That is the component function will be executed and display the JSX code in the 
   }
 ```
 
-In the above code which writes the data into the local storage there is no state updating logic after the item is stored. 
+In the above code which writes the data into the local storage there is no state updating logic after the item is stored.
 
-Even if we are updating any state after the storage it will not create an infinite loop because it is inside of a function that is triggered once the it is called. If we are calling the function conditionally like based on a button click there is no need to use the `useEffect `hook.   
+Even if we are updating any state after the storage it will not create an infinite loop because it is inside of a function that is triggered once the it is called. If we are calling the function conditionally like based on a button click there is no need to use the `useEffect `hook.  
 **NOTE**: We only need the useEffect hook to avoid infinite loops or you have code that can only run after the component code is executed at least once.
 
 Another example would be the the retrieval of items from the `localStorage`. We might assume that we need to use the `useEffect `hook to load the data from the `localStorage`. For example:
@@ -1228,18 +1222,18 @@ Another example would be the the retrieval of items from the `localStorage`. We 
   },[])
 ```
 
-In the above code the usage of `useEffect `is redundant, because the operations performed inside of the callback function is synchronous unlike the operations such as getting the current location. It will finish the execution instantly. It will execute line by line, once a line finishes execution it is done and we will have the final result. This was not in the case of fetching the location. 
+In the above code the usage of `useEffect `is redundant, because the operations performed inside of the callback function is synchronous unlike the operations such as getting the current location. It will finish the execution instantly. It will execute line by line, once a line finishes execution it is done and we will have the final result. This was not in the case of fetching the location.
 
 In this case we can fetch the data from the local storage before state initialization and store the fetched value as the initial state value to be precise we can place the data fetching to outside of the function so that the data is loaded only once when the application starts.
 
 For use cases where we can use the `useEffect `hook, we have seen the use of `useRef `and `useImperativeHandle` hooks to expose the opening and closing of Modals/dialogues. We can avoid the use of these and we can use a state variable to control the opening and closing of the modal. In the parent component of the modal we can define a state to indicate weather the modal is open or closed and where ever we are opening the modal using the refs we can update the state variable using the setState. We can then pass this state as prop to the modal component. Inside of the modal component for the `dialogue `element we can set the `open `prop and set the value which is passed from the parent component. But this approach has a problem even though we will be able to display the dialogue it will not show the backdrop. dialogue element will only show the backdrop if we use the` showModal()` function. We can fix this issue with the help of `useEffect()` hook.
 
 We can try to open the modal by checking the prop passed to it from the parent. If the prop value is true we can show the modal using the `showModal()` method, otherwise we can call the `close()` method. We will get an error if we do so which is:  
-`Uncaught TypeError: Cannot read properties of undefined (reading 'close')` 
+`Uncaught TypeError: Cannot read properties of undefined (reading 'close')`
 
-This is because the connection between the ref and the element will not be established because when we are trying to call the function on a ref, the JSX code associated with the element will not be executed yet, so the ref will be undefined initially. This is where we can use useEffect. useEffect can help you synchronize prop values/state values to DOM API's like `showModal()` and `close()`. As we learned earlier the callback function in the useEffect will be executed right after the component function is executed. Due to this the connection between the element and ref will be established. 
+This is because the connection between the ref and the element will not be established because when we are trying to call the function on a ref, the JSX code associated with the element will not be executed yet, so the ref will be undefined initially. This is where we can use useEffect. useEffect can help you synchronize prop values/state values to DOM API's like `showModal()` and `close()`. As we learned earlier the callback function in the useEffect will be executed right after the component function is executed. Due to this the connection between the element and ref will be established.
 
-This can be thought of as side effect, because it will have an impact on the UI but it does not have an impact on the JSX code immediately. We can wrap the code in useEffect but this time we must use the dependency array. 
+This can be thought of as side effect, because it will have an impact on the UI but it does not have an impact on the JSX code immediately. We can wrap the code in useEffect but this time we must use the dependency array.
 
 Dependencies in the end are prop or state values that are used inside of the useEffect's callback function. Any value that causes the component function to execute again is a dependency if it used inside of useEffect. `useEffect `only considers values as dependencies which causes the component function to execute again. For example consider the below code :
 
@@ -1255,7 +1249,7 @@ useEffect(() => {
 
 Here if we don't pass the open prop as a dependency the modal will not work because the effect function is not executing again. In the above code the function will execute again if the value of the open prop changes.
 
-Apart from the features that are mentioned earlier `useEffect `has also one additional feature. For this, consider the below component. 
+Apart from the features that are mentioned earlier `useEffect `has also one additional feature. For this, consider the below component.
 
 ```javaScript
 export default function DeleteConfirmation({ onConfirm, onCancel }) {
@@ -1278,10 +1272,10 @@ export default function DeleteConfirmation({ onConfirm, onCancel }) {
 
 This is the content which we placed inside of the modal which ask the user for a confirmation.
 
- For example if we want to automatically take the user's confirmation after a timeout when the modal is open we can use the `setTimeout()` function provided by the javascript. It takes in 2 arguments the first one is a callback function and the second one is the time in milliseconds to trigger the callback when the time is expired. We can call the `onConfirm()` method which we have already defined to close the modal. Currently this component is always being rendered, so we should make it render conditionally by checking if the modal is open or not. So the timer we have defined will fire automatically when the component is rendered for the first time.   
-This approach also have a problem because when a user click on an image it will show the modal which asks the user for confirmation on deletion. 
+For example if we want to automatically take the user's confirmation after a timeout when the modal is open we can use the `setTimeout()` function provided by the javascript. It takes in 2 arguments the first one is a callback function and the second one is the time in milliseconds to trigger the callback when the time is expired. We can call the `onConfirm()` method which we have already defined to close the modal. Currently this component is always being rendered, so we should make it render conditionally by checking if the modal is open or not. So the timer we have defined will fire automatically when the component is rendered for the first time.  
+This approach also have a problem because when a user click on an image it will show the modal which asks the user for confirmation on deletion.
 
-During this timer will be set which will automatically trigger delete. But if the user performs the delete manually the timer is not stopped. If the user confirms the option the item will be deleted, but if the user cancels the operation the item will still be removed because the timeout function is not stopped. This problem can be fixed with `useEffect`. In this case the problem was not setting the timer but clearing it when the component function disappears. In `useEffect `we can also define a clean up function which should be executed right before the effect function runs again. We run a clean up function by returning it from the callback function of `useEffect`. This means that we will be returning another function which will be executed by react right before the effect function runs again or right before the component is removed from DOM. We can use this clean up function to stop the timer. 
+During this timer will be set which will automatically trigger delete. But if the user performs the delete manually the timer is not stopped. If the user confirms the option the item will be deleted, but if the user cancels the operation the item will still be removed because the timeout function is not stopped. This problem can be fixed with `useEffect`. In this case the problem was not setting the timer but clearing it when the component function disappears. In `useEffect `we can also define a clean up function which should be executed right before the effect function runs again. We run a clean up function by returning it from the callback function of `useEffect`. This means that we will be returning another function which will be executed by react right before the effect function runs again or right before the component is removed from DOM. We can use this clean up function to stop the timer.
 
 The clean up function will also run if the effect function runs again, then the cleanup function runs right before the effect function runs. The code will look like:
 
@@ -1298,7 +1292,7 @@ The clean up function will also run if the effect function runs again, then the 
 
 The clean up function will not run before effect function if the effect function is executing for the first time.
 
-If we are getting a function as prop we should just point at them in the dependency array. If you have multiple dependencies you should separate them with ,. There is a problem when adding functions as dependencies to the `useEffect`, there is a danger of creating an infinite loop. Because when you add a dependency to the dependency array we are telling react that this effect function should be executed when the component function and the dependency value is changed. If the dependency passed is a variable like a number, string or boolean the function will re execute when dependency value is changed. When the dependency is a function it is a bit more trickier because you could say that the code in the function which is defined never changes, technically this assumption is not correct. Because functions in javascript are just values (objects). The function which is defined in a component will be re created when the component function is re executed. 
+If we are getting a function as prop we should just point at them in the dependency array. If you have multiple dependencies you should separate them with ,. There is a problem when adding functions as dependencies to the `useEffect`, there is a danger of creating an infinite loop. Because when you add a dependency to the dependency array we are telling react that this effect function should be executed when the component function and the dependency value is changed. If the dependency passed is a variable like a number, string or boolean the function will re execute when dependency value is changed. When the dependency is a function it is a bit more trickier because you could say that the code in the function which is defined never changes, technically this assumption is not correct. Because functions in javascript are just values (objects). The function which is defined in a component will be re created when the component function is re executed.
 
 In javascript even if they have the same value two objects are never the same. React compares the two values of the dependency array using the equality operator and determines whether to re execute the effect function. Due to this the function pointer which we pass to the dependency array will be different between the render cycles. This causes the effect function to re execute when re rendering happens even though dependency is not changed. In the above example the infinite loop will not happen because when the onConfirm method is called a state update is triggered and the component itself is removed from dom. There is a safer way which we can use to avoid the problem.
 
@@ -1345,7 +1339,7 @@ export default function DeleteConfirmation({ onConfirm, onCancel }) {
 
 There is one more thing we need to do when using `useCallback `that is to set the dependency array. We should add any prop or state values that are used inside of the wrapped function. A general rule of thumb is that we should include any value that the callback uses and can change over time. It is also fine if we pass it as an empty array if there are no such values.
 
-Consider another example for the cleanup function. We had previously seen the implementation of the automatic deletion feature when the modal is opened. We can show a progress bar which indicates that the timer is running and the given item will be deleted after 3 second timer is expired. We can use the `progress `html element inside of the delete confirmation component. To indicate the progress we should manage a state and control the re rendering of the component to show the progress on the screen. For this we can use the `setIntervalFunction` which is provided by javascript. The setInterval takes in a function as the first argument and time in milliseconds as the second argument. The function we passed will be executed again and again after the specified time. We can initialize the state as the total time for the value to be deleted automatically. We can then use the set interval function to reduce 10 milliseconds from the state every 10 milli seconds. 
+Consider another example for the cleanup function. We had previously seen the implementation of the automatic deletion feature when the modal is opened. We can show a progress bar which indicates that the timer is running and the given item will be deleted after 3 second timer is expired. We can use the `progress `html element inside of the delete confirmation component. To indicate the progress we should manage a state and control the re rendering of the component to show the progress on the screen. For this we can use the `setIntervalFunction` which is provided by javascript. The setInterval takes in a function as the first argument and time in milliseconds as the second argument. The function we passed will be executed again and again after the specified time. We can initialize the state as the total time for the value to be deleted automatically. We can then use the set interval function to reduce 10 milliseconds from the state every 10 milli seconds.
 
 We can use the state variable as value for the value prop for progress element. We should also pass the `max `value so that the browser can automatically calculate and display the progress. This will cause an infinite loop problem which we have seen earlier, so we should wrap it inside of the `useEffect `and use a clean up function. The code will look like:
 
@@ -1377,7 +1371,7 @@ export default function DeleteConfirmation({ onConfirm, onCancel }) {
 }
 ```
 
-The above code is not optimal because every 10 milli seconds the component is re rendered to show the progress bar. Even though it works and does not show any issue on a modern computer this is not optimal. To optimize this we can outsource the progress bar to a separate component so that only one component is re rendered. 
+The above code is not optimal because every 10 milli seconds the component is re rendered to show the progress bar. Even though it works and does not show any issue on a modern computer this is not optimal. To optimize this we can outsource the progress bar to a separate component so that only one component is re rendered.
 
 The `sort `function in javascript is used to sort elements in an array. It takes a function as argument. This function will automatically receive 2 elements as argument. If we are returning a negative number they will be swapped, but if we are returning a positive number their order will remain the same. If we want to shuffle the sorting we can use the `Math.random()` function which returns a value between 0 and 1 and if we subtract 0.5 from that we will have a 50% chance of getting a +ve number and 50% chance of getting a -ve number.
 
@@ -1395,11 +1389,11 @@ You can add a `key `prop to any component because it is a prop that react is loo
 
 We can use the index prop in the Questions child component.
 
-In some cases if there are multiple states inside of a component and the change of a state may cause un expected behavior to the component when that state changes. To solve this we may use the `useEffect `hook and control the re rendering of the component. But as a react developer you should minimize the use of `useEffect `as often time you might misuse it. It is a good practice to avoid the usage of `useEffect `whenever possible. To fix the above scenario we can use `refs `instead of state because the change of the ref value will not cause re execution to the component. 
+In some cases if there are multiple states inside of a component and the change of a state may cause un expected behavior to the component when that state changes. To solve this we may use the `useEffect `hook and control the re rendering of the component. But as a react developer you should minimize the use of `useEffect `as often time you might misuse it. It is a good practice to avoid the usage of `useEffect `whenever possible. To fix the above scenario we can use `refs `instead of state because the change of the ref value will not cause re execution to the component.
 
 Rendering a component means that executing all the code inside of a component function. Every component must return something that can be rendered typically JSX code. This JSX code is in the end translated to javascript code and translated to actual elements that are shown on the screen. If you have custom components inside of the JSX code react will go ahead and execute those functions from top to bottom. For every application react will generate a component tree like this. For every app the App component is the root element in the render tree and the other components which is rendered inside of it is placed as children to this component. When the parent component is executed if it have children and the if the children have props those props will be passed to child component. Re-renders happen when state or props change, not just on the initial render. So the component function executes again, and React compares the new output with the previous one to update the DOM efficiently.
 
-The profiler tab of react dev tools shows which component is being rendered and which components are being updated on which circumstances. We can click on the start profiling button and interact with the application. After this we can click on stop profiling button which will show the components that has been rendered between the start and stop. The flamegraph chart show the components by the order of their execution along with the relation between component function. It will also show the components that did not re render.   
+The profiler tab of react dev tools shows which component is being rendered and which components are being updated on which circumstances. We can click on the start profiling button and interact with the application. After this we can click on stop profiling button which will show the components that has been rendered between the start and stop. The flamegraph chart show the components by the order of their execution along with the relation between component function. It will also show the components that did not re render.  
 When we switch to the ranked chart mode we can see only the components that were re rendered. It will also show the components which caused the re render cycle. The root element will be shown at the top and it's nested child elements will be shown below it.  
 You can also go to the settings and under profiler enable the option to show why each component re rendered.
 
@@ -1433,7 +1427,7 @@ export default Counter;
 
 What memo will do is that it will take a look at the props of your component function, when the component function would normally execute again, it will compare the old prop value and new prop value. If both these values are the same the execution of the function will be prevented by memo. It will only execute the component if the prop value change or the internal state change.
 
-**NOTE :**`memo `only blocks the component function re executions triggered by the execution of parent component. memo doesn't consider internal changes for the component such as state change. You should not over use memo. Never wrap all your component functions as memo. Whenever the use of memo is absolutely necessary use them as high up in the component tree as possible. If we do so all the nested components execution will be also blocked. When we memoize a component function react checks the props, when you do this for all the components react will always have to check the props which will have a significant impact on the performance. We also should not memoize component functions which will have frequent prop changes. This is meaningless and will impact the performance. 
+**NOTE :**`memo `only blocks the component function re executions triggered by the execution of parent component. memo doesn't consider internal changes for the component such as state change. You should not over use memo. Never wrap all your component functions as memo. Whenever the use of memo is absolutely necessary use them as high up in the component tree as possible. If we do so all the nested components execution will be also blocked. When we memoize a component function react checks the props, when you do this for all the components react will always have to check the props which will have a significant impact on the performance. We also should not memoize component functions which will have frequent prop changes. This is meaningless and will impact the performance.
 
 When we are passing functions as props to components which is memoized we should wrap those functions with `useCallback `hook because other wise every time the component function of the parent component executes the function will also change thus triggering re render of the memoized component.
 
@@ -1446,7 +1440,7 @@ If you have an empty dependency array the function will never re execute. You sh
 ```javaScript
 import {useMemo} from "react";
 ......
-  const initialCountIsPrime = useMemo(() => isPrime(initialCount), [initialCount]);  
+  const initialCountIsPrime = useMemo(() => isPrime(initialCount), [initialCount]);
 ```
 
 In the above example code we used the `useMemo `hook to memoize the result of `isPrime `function. If the `initialCount `is changed then only it will re execute the isPrime method and calculate the result.
@@ -1455,44 +1449,44 @@ You should not over use `useMemo`. You should not wrap all your functions inside
 
 Just because a component function is re executed doesn't means that all the code returned by the component is re inserted into the DOM. You can see this by opening the dev tools of the browser. When you interact with the page the elements which change will flash. React works with the help of virtual DOM to find out which parts of the actual DOM need to be updated. The virtual DOM is a snapshot of the real DOM which resides only in the memory. Working with the virtual DOM is faster than working in the real DOM. React creates a component tree and derives the html code to be rendered. Then it creates a virtual DOM snapshot, it is a representation how the real DOM should look like. Whenever a change happens in the page react compares the new snapshot that is generated to the old snapshot that is present. In the initial loading since there is no old snapshot it places the new snap shot as the real DOM. i.e, the entire virtual DOM is inserted to real DOM.
 
-When a change happens it recreates the component tree and derives the updated html code for the entire component tree. It compares the newly generated code (snapshot) with the old code(snapshot) which happens in the memory. It then determines which parts of the code needs to updated, then as a next step react goes ahead and apply those changes to the real DOM(only those changes, nothing else).   
-**NOTE:** Just because a component function is re executed doesn't mean that all the code returned by that component is replaced by react. All the real DOM operations are performance intensive and react tries to minimize it as much as possible. 
+When a change happens it recreates the component tree and derives the updated html code for the entire component tree. It compares the newly generated code (snapshot) with the old code(snapshot) which happens in the memory. It then determines which parts of the code needs to updated, then as a next step react goes ahead and apply those changes to the real DOM(only those changes, nothing else).  
+**NOTE:** Just because a component function is re executed doesn't mean that all the code returned by that component is replaced by react. All the real DOM operations are performance intensive and react tries to minimize it as much as possible.
 
 The state you registered in a component is scoped to that component and it is recreated whenever you re use the component. This is what makes components re usable. We can create multiple instances of the component and use them in our application. The states of these components will be independent and works separately. State is tracked by the component type, the component's position in the component tree and key if provided. When there are multiple sibling components of the same type and each has it's own state, if a state change triggers a position change for a component the component there are chances of state inconsistencies. React forces you to add a key prop to these type of components such as list items because key is one of the things that is taken into account to map a state to a component. When you are working with states like this try to use objects to store the values, also use unique id's for each value so that each change can be properly tracked and applied.
 
 This way the state change moves with the item. The key prop helps to identify components when there is a dynamic list of similar components. If you don't use a key for sibling elements react may re render all sibling elements un necessarily, also the component state can get mixed up because react relies on position rather than identity. Also the input, focus, animations etc can behave unexpectedly. When you use a unique key only the required elements are updated and all the above mentioned problems are avoided. Usage of keys for items such as lists makes react render items such as lists in a more optimal way.
 
-We can use the key prop to re render the components whenever the key changes. When the key of a component changes react will throw away the old component instance and re create it. This method can be used if a state in a component can change that should lead to some change in child component. 
+We can use the key prop to re render the components whenever the key changes. When the key of a component changes react will throw away the old component instance and re create it. This method can be used if a state in a component can change that should lead to some change in child component.
 
-When you call a state updating function the state update will be scheduled by react. It will not be executed instantly. If you try to access the value of the state right after updating the state you might not get the new state value instantly. When we call the state update function it will trigger a new component function execution and when the component function is executed again the new value will be available inside of the state. When your state update depends on the previous state it is recommended to use the function form for updating the state. The function you pass to the state updating function will automatically get the previous state as the argument and it will return the new state. When using this method react guarantees you that you will get the latest snapshot of the state available. And if multiple updates of the same type should be scheduled they will executed in the order they were scheduled and you will always get the right value in state. 
+When you call a state updating function the state update will be scheduled by react. It will not be executed instantly. If you try to access the value of the state right after updating the state you might not get the new state value instantly. When we call the state update function it will trigger a new component function execution and when the component function is executed again the new value will be available inside of the state. When your state update depends on the previous state it is recommended to use the function form for updating the state. The function you pass to the state updating function will automatically get the previous state as the argument and it will return the new state. When using this method react guarantees you that you will get the latest snapshot of the state available. And if multiple updates of the same type should be scheduled they will executed in the order they were scheduled and you will always get the right value in state.
 
 If you have multiple state updates that are triggered simultaneously inside of the component function, you will not end up with multiple component function executions. This is because react also performs state batching which means that multiple state updates that are triggered from the same function are batched together and will only need one component execution.
 
 We can use the `Million.js` package to optimize the performance of react applications. This package can make your react applications faster. This package can be used for free. You can configure this in you project either in automatic mode or manual mode. In automatic mode you need to install the package using the command :  
 `npm install million`  
 After this since we are using vite we need to configure vite config file. You can paste the following code inside of vite config file like:  
-`import million from "million/compiler";import react from "@vitejs/plugin-react";import { defineConfig } from "vite"; export default defineConfig({ plugins: [million.vite({ auto: true }), react()],});` 
+`import million from "million/compiler";import react from "@vitejs/plugin-react";import { defineConfig } from "vite"; export default defineConfig({ plugins: [million.vite({ auto: true }), react()],});`
 
-This will provide you some improvements out of the box just by doing this.   
+This will provide you some improvements out of the box just by doing this.  
 If you want to ignore certain components we should use the below command as:  
-`// million-ignore`   
+`// million-ignore`
 
 Million.js is an optimizing compiler that automatically improves React performance without requiring code changes. t analyzes your React components and compiles them into optimized higher-order components without you needing to rewrite anything. The compiler can make components up to 70% faster by using a different rendering approach. Instead of diffing the entire DOM tree like React does, Million.js diffs data and updates DOM nodes directly, which is significantly more efficient for larger component trees. Million.js uses about 55% of the memory that React does on standby after page load. his is crucial for resource-constrained devices and older hardware, where memory overhead can cause noticeable lag and poor user experience.
 
 Million.js shines for:
 
-* **Static and semi-static components** like forms, landing pages, and CRUD operations
-* **Nested data structures** where tree traversal is expensive (e-commerce, CMSs)
-* **UI-heavy applications** where DOM manipulation is the bottleneck
+- **Static and semi-static components** like forms, landing pages, and CRUD operations
+- **Nested data structures** where tree traversal is expensive (e-commerce, CMSs)
+- **UI-heavy applications** where DOM manipulation is the bottleneck
 
-Class based components are an alternative to functional components. Even though react prefers functional components many legacy projects and packages of react are in class based components. For functional components we created javascript functions which accepts props and return the JSX code that is rendered on the screen. For class based components we can create a class which extends the `Component `class. The class should have the render method which will return the JSX code. Usage of functional components is the modern and default approach. Apart from `Error Boundaries` there is no need to use class based components. You can build anything that you can build with functional components with class based components also.   
-Prior to react 16.8 usage of class based components were a requirement because that is how state and side effects was managed in react. React 16.8 introduced React Hooks for functional components. 
+Class based components are an alternative to functional components. Even though react prefers functional components many legacy projects and packages of react are in class based components. For functional components we created javascript functions which accepts props and return the JSX code that is rendered on the screen. For class based components we can create a class which extends the `Component `class. The class should have the render method which will return the JSX code. Usage of functional components is the modern and default approach. Apart from `Error Boundaries` there is no need to use class based components. You can build anything that you can build with functional components with class based components also.  
+Prior to react 16.8 usage of class based components were a requirement because that is how state and side effects was managed in react. React 16.8 introduced React Hooks for functional components.
 
-These hooks brought features to the functional components which were once reserved for class based components. Class based components cannot use react hooks. 
+These hooks brought features to the functional components which were once reserved for class based components. Class based components cannot use react hooks.
 
 `render` method is a specific method in react which react will call when it finds a component that is used in the JSX code. React will use this render method to determine what should be rendered on the screen. We should return JSX code from the render method.  
 For functional components we had props which was automatically send by react. But for class based components that is not the case. Here the render method doesn't receive props. To make a class based component work we first need to import the Component class from react like:  
-`import {Component} from 'react';` 
+`import {Component} from 'react';`
 
 Then we need to extend our component class with the `Component `class imported from react. This way our custom component class will inherit from the component class defined by react. It also adds a couple of important properties such as the `props `property. We can access the props passed to a class based component using `this.props.propName`. Example for class based component:
 
@@ -1507,16 +1501,16 @@ class User extends Component{
 export default User;
 ```
 
-**NOTE:** We still need to export the custom component class we created just like the function for functional components.   
-Class based components can work together with functional components. Class based components can render a functional component and functional components can render class based components. In react projects it is a common practice to either stick with functional components or class based components. 
+**NOTE:** We still need to export the custom component class we created just like the function for functional components.  
+Class based components can work together with functional components. Class based components can render a functional component and functional components can render class based components. In react projects it is a common practice to either stick with functional components or class based components.
 
 In class based components we should add the functions required by the component without using the function keyword. For class based components we need to initialize the state inside of the component class and update it when we need it. To define the state inside of class based components we need to use the `constructor ` function. The constructor function is automatically called when the component is instantiated. Inside this we can initialize the component using `this.state` to an object. It is important to note that for class based components your state is always an object. Whereas for functional components your state can be anything like a string, numeric or boolean value. Also the property name should also be `state`, it is not upto us to define the state name. We group all the states that we use inside of the component into a single object. You can add any type of values as attributes to the state object.
 
-When changing the state we should not directly access the properties from the state object and modify it instead we use the `this.setState()` method to update the state. This is provided by the component class. The `setState `method always takes in an object or a function that returns an object. When you pass the property which you want to modify through the `setState`, other properties which are already inside of the state are not modified, instead the new state property is merged with the old state property. Whereas when we use the `useState `hook the new state value overrides the old state value. We can also pass a function to the `this.setState` if your current state change depends on the previous state change.   
-To access the state we can directly access the state using the `this.state.propertyName`. We define variables and constants inside of the `render `method. When calling methods that are present in the component class we should use the `this `keyword to call the methods. 
+When changing the state we should not directly access the properties from the state object and modify it instead we use the `this.setState()` method to update the state. This is provided by the component class. The `setState `method always takes in an object or a function that returns an object. When you pass the property which you want to modify through the `setState`, other properties which are already inside of the state are not modified, instead the new state property is merged with the old state property. Whereas when we use the `useState `hook the new state value overrides the old state value. We can also pass a function to the `this.setState` if your current state change depends on the previous state change.  
+To access the state we can directly access the state using the `this.state.propertyName`. We define variables and constants inside of the `render `method. When calling methods that are present in the component class we should use the `this `keyword to call the methods.
 
-Additionally we need to bind the function with `bind(this)` so that the functions are correctly pointed and executed.   
-**NOTE:** When using the constructor we should call the `super() `method as the first line of the constructor.   
+Additionally we need to bind the function with `bind(this)` so that the functions are correctly pointed and executed.  
+**NOTE:** When using the constructor we should call the `super() `method as the first line of the constructor.  
 Example:
 
 ```javaScript
@@ -1559,7 +1553,7 @@ export default Users;
 
 All the components in react has a concept of life cycle. For class based components we have life cycle methods to run code at different points of that life cycle. The first and most important life cycle method you can add to the class based component is the `componentDidMount()` method. Like render this is a built in method which you can use when you extend the component class. When you add this method, react will call it when the component is mounted. Apart from this we also have `componentDidUpdate()` and `componentWillUnmount()`. There are also other life cycle methods but these 3 are the most important. The componentDidMount method will be executed by react when the component is mounted(evaluated and rendered by react) to the DOM. This is equivalent to using `useEffect()` hook. Using the useEffect hook with an empty dependency array is same as using `componentDidMount()`. The componentDidUpdate() method is called by react when the component is updated.
 
-ie, when component is re evaluated, and re rendered by react. This is equivalent to the use of `useEffect` with a dependency array. The `componentWillUnmount()` method is called right before the component is removed from DOM. This is equivalent to the cleanup function which we used with the useEffect. 
+ie, when component is re evaluated, and re rendered by react. This is equivalent to the use of `useEffect` with a dependency array. The `componentWillUnmount()` method is called right before the component is removed from DOM. This is equivalent to the cleanup function which we used with the useEffect.
 
 We can use the `componentDidUpdate `method to execute code when ever the component is updated. Inside this method if we are doing some state updates it will create an infinite loop. To avoid this the `componetDidUpdate `method automatically receives 2 arguments the `previousProps `and `previousState`. We can use an if check before updating the state and determine weather the `previousState` 's data is the same as the current state's data which we want to update. On if they are different we should execute the state updating logic. This way we can avoid an infinite loop. The example code will look like:
 
@@ -1567,10 +1561,10 @@ We can use the `componentDidUpdate `method to execute code when ever the compone
 componentDidUpdate(prevProps, prevState) {
     if (prevState.searchTerm !== this.state.searchTerm) {
       this.setState(
-        { 
+        {
           filteredUsers: DUMMY_USERS.filter(
             (user) => user.name.includes(this.state.searchTerm)
-          ) 
+          )
         }
       );
     }
@@ -1587,7 +1581,7 @@ useEffect(() => {
   }, [searchTerm]);
 ```
 
-Which is much more leaner and easy to implement because we don't need to manually check if the state is changed. 
+Which is much more leaner and easy to implement because we don't need to manually check if the state is changed.
 
 We can use the `componentDidMount()` method to execute some code when the component is loaded for the first time. For example you might want to fetch the data from a remote server by using http requests, so we can use this method for that. We don't need to use an if check because this method will only run once when the component is initially rendered for the first time. eg:
 
@@ -1599,11 +1593,11 @@ We can use the `componentDidMount()` method to execute some code when the compon
   }
 ```
 
-This is the same as using `useEffect `with an empty dependency array or a dependency that remains constant. 
+This is the same as using `useEffect `with an empty dependency array or a dependency that remains constant.
 
-All these life cycle methods run for every component instance just like `useEffect `and state works for every component instance. 
+All these life cycle methods run for every component instance just like `useEffect `and state works for every component instance.
 
-We create the context for class based components as the same way as we used to create for functional components. When using the context inside of functional components we used the `useContext()` hook. But for class based components we can't use it. We can do it in 2 ways, by using the ContextConsumer like we have seen for functional components. Since this is used in JSX only it will work in both class based and functional components. We have seen that we can use the `useContext `hook for listening to multiple contexts inside of the same component. But for class based components we cannot do that. You can connect a class based component only to a single context. We can do that by defining a `static `property to the component class called `contextType `and assigning it with the context object which we have imported from the context file. This tells react that the component will have access to the context. You can only set this once. 
+We create the context for class based components as the same way as we used to create for functional components. When using the context inside of functional components we used the `useContext()` hook. But for class based components we can't use it. We can do it in 2 ways, by using the ContextConsumer like we have seen for functional components. Since this is used in JSX only it will work in both class based and functional components. We have seen that we can use the `useContext `hook for listening to multiple contexts inside of the same component. But for class based components we cannot do that. You can connect a class based component only to a single context. We can do that by defining a `static `property to the component class called `contextType `and assigning it with the context object which we have imported from the context file. This tells react that the component will have access to the context. You can only set this once.
 
 To access the context we can use the `this.context.contextValue` inside of the component. The example will look like:
 
@@ -1618,9 +1612,9 @@ componentDidMount(){
   }
 ```
 
-You only need to use class based components if you are building error boundaries or you have an existing legacy react project which uses class based components. 
+You only need to use class based components if you are building error boundaries or you have an existing legacy react project which uses class based components.
 
-Sometimes something goes wrong with your application (not bugs introduced by the developer), some errors that you can't prevent or which are simply being used to transport information that something went wrong from one part of the application to another part. For example an http request, if we sent a http request from our application and if the server is not responding the request can't complete and you will end up with an error in your application. This is not something that we can fix as a developer. This can cause the application to crash because if the error is not handled properly the application might crash. In regular javascript we use `try...catch` we can only use this in places where we can write normal javascript code. If the error is inside of JSX code we cannot wrap that in `try...catch`. In such a case we can use an error boundary. To create an error boundary we can create a javascript file inside of the components folder inside which we can create a class based component. 
+Sometimes something goes wrong with your application (not bugs introduced by the developer), some errors that you can't prevent or which are simply being used to transport information that something went wrong from one part of the application to another part. For example an http request, if we sent a http request from our application and if the server is not responding the request can't complete and you will end up with an error in your application. This is not something that we can fix as a developer. This can cause the application to crash because if the error is not handled properly the application might crash. In regular javascript we use `try...catch` we can only use this in places where we can write normal javascript code. If the error is inside of JSX code we cannot wrap that in `try...catch`. In such a case we can use an error boundary. To create an error boundary we can create a javascript file inside of the components folder inside which we can create a class based component.
 
 The error boundary is a special component class which implements the `componentDidCatch()` method. Thought the `componentDidCatch()` method can be added to any class based component, and it makes the class based component an error boundary. There is no equivalent to this for functional components at the moment. This life cycle method will be triggered when one of the child components throws an error. So inside the custom error boundary component we add a render method. From this render method we will return `this.props.children`. This way we can wrap other components which might cause problems with this custom error boundary component. You can also wrap it around more than one component. To the `componentDidCatch()` method we will get the error object as parameter automatically passed in by react. We can handle this error inside of this function. Since this is a regular class based component we can also use state to set the error states and handle it. An example will look like:
 
@@ -1658,13 +1652,13 @@ We can wrap the components like:
       </ErrorBoundary>
 ```
 
-In the development mode we will see the errors, but in production we will not see any errors if we don't use error boundaries. If we used error boundaries the message that we have set will be displayed to the users. It is similar to try catch in regular javascript because it let's you to catch the errors without crashing the entire application. 
+In the development mode we will see the errors, but in production we will not see any errors if we don't use error boundaries. If we used error boundaries the message that we have set will be displayed to the users. It is similar to try catch in regular javascript because it let's you to catch the errors without crashing the entire application.
 
-We don't directly connect our react apps to a database because we will run into security issues. When you create react apps all your code runs inside of the user's browser. If we are doing so the visitors can access the code and if that code contains credentials to access the database your database might get compromised. There are also some restrictions when writing front-end code for example we cannot easily access the file system that is shared and centrally managed. Instead of directly accessing the database or a shared file system we communicate with a backend server which acts as a middle man. The front end react code which runs in the users browser will communicate with a separate backend server. We interact with the database through this backend server. This backend server and it's code is in accessible to the users of the website. To connect with the front end and backend we use http requests. 
+We don't directly connect our react apps to a database because we will run into security issues. When you create react apps all your code runs inside of the user's browser. If we are doing so the visitors can access the code and if that code contains credentials to access the database your database might get compromised. There are also some restrictions when writing front-end code for example we cannot easily access the file system that is shared and centrally managed. Instead of directly accessing the database or a shared file system we communicate with a backend server which acts as a middle man. The front end react code which runs in the users browser will communicate with a separate backend server. We interact with the database through this backend server. This backend server and it's code is in accessible to the users of the website. To connect with the front end and backend we use http requests.
 
-We can send only the http requests that are allowed and accepted by the backend. You can control what the users of the application can do and can't do. This is possible through API (Application Programming Interface) end points. A REST API is a web server that exposes certain pre-defined routes to which HTTP requests can be sent. The API URL's are configured by the developer so that the necessary functionalities can be accessed through proper URL's. We usually have separate front end and backend projects where you don't necessarily need to use the same programming language. You can also build fullstack react apps (blend of front end and backend) via Next JS or Remix. 
+We can send only the http requests that are allowed and accepted by the backend. You can control what the users of the application can do and can't do. This is possible through API (Application Programming Interface) end points. A REST API is a web server that exposes certain pre-defined routes to which HTTP requests can be sent. The API URL's are configured by the developer so that the necessary functionalities can be accessed through proper URL's. We usually have separate front end and backend projects where you don't necessarily need to use the same programming language. You can also build fullstack react apps (blend of front end and backend) via Next JS or Remix.
 
-When communicating with a backend we are sending http request which needs to travel through the internet and reach the backend server. Then the backend server needs to process that request and send back the response. This might take some time. So in our react component we need to load the component initially without data and once the data is available we need to update the component with the data. 
+When communicating with a backend we are sending http request which needs to travel through the internet and reach the backend server. Then the backend server needs to process that request and send back the response. This might take some time. So in our react component we need to load the component initially without data and once the data is available we need to update the component with the data.
 
 We can use multiple ways to send http requests to backend servers. We can use the `fetch()` function which is provided by javascript. In the simplest form it requires the URL to which we need to send the request. Out of the box it will send a get request to the specified URL. Fetch function returns a promise which is a javascript value that will eventually resolve to another value. It is basically a wrapper object around a value that is not present yet but eventually will be there. To access the values resolved by fetch we can chain values. We can chain the then method and pass a function to the then method to define a function that should be executed once this promise is resolved and a response is present. This function will automatically receive that response object. In modern javascript we can use the `await `keyword to access the response. The await syntax can only be used if the function wrapping the fetch is marked as `async`.
 
@@ -1808,19 +1802,19 @@ export async function updateUserPlaces(places) {
 
 **We can mark event listener functions as async**.
 
-Optimistic updates are state updates where you update the local state before sending the http request to the backend. The state update is done and the changes will be reflected instantly to the user and the the http request is send to the backend server behind the scenes. There are chances that the http request might return an error response, in those cases we need to handle them. So in the catch block we can set the state to the previous state thus rolling back the update. Often the optimistic updating can provide a better user experience that showing the loading spinner or loading text. You can choose an approach based on the preferences or the exact requirement you want. There are also situations where we cannot use the optimistic updates such as fetching the data, in those cases we need to display the loading state. 
+Optimistic updates are state updates where you update the local state before sending the http request to the backend. The state update is done and the changes will be reflected instantly to the user and the the http request is send to the backend server behind the scenes. There are chances that the http request might return an error response, in those cases we need to handle them. So in the catch block we can set the state to the previous state thus rolling back the update. Often the optimistic updating can provide a better user experience that showing the loading spinner or loading text. You can choose an approach based on the preferences or the exact requirement you want. There are also situations where we cannot use the optimistic updates such as fetching the data, in those cases we need to display the loading state.
 
-In some cases the UI might update because the state is updated, but when the response from the backend provides an error the instant rollback without any warning message might confuse the user. To avoid this we might need to manage some extra state. 
+In some cases the UI might update because the state is updated, but when the response from the backend provides an error the instant rollback without any warning message might confuse the user. To avoid this we might need to manage some extra state.
 
 There are 2 important rules that we should be aware of when using hooks in react:
 
 1. You should only use react hooks only inside of react component functions.
 2. You should only call hooks in the top level statements. You must not nest them in functions or if statements inside of the component functions.
 
-For creating custom hooks we can modify the first rule a little bit. You can use custom hooks inside of other hooks.   
-The idea behind custom hooks is to wrap and re use code that goes into your component functions. For example consider the method we used for making an http request. We used a loading state to show that the data is being loaded, we also called a method which makes the http request, and we also created an error state to handle situations where the http request might fail, and we were using `useEffect `hook to perform all the above. Even though the endpoint is different the core logic remains the same. 
+For creating custom hooks we can modify the first rule a little bit. You can use custom hooks inside of other hooks.  
+The idea behind custom hooks is to wrap and re use code that goes into your component functions. For example consider the method we used for making an http request. We used a loading state to show that the data is being loaded, we also called a method which makes the http request, and we also created an error state to handle situations where the http request might fail, and we were using `useEffect `hook to perform all the above. Even though the endpoint is different the core logic remains the same.
 
-This above condition is a perfect case for using a generic code which helps us to reuse based on the situation. We used components to build configurable re usable UI elements. We can follow the same principle for code that does not return JSX elements. 
+This above condition is a perfect case for using a generic code which helps us to reuse based on the situation. We used components to build configurable re usable UI elements. We can follow the same principle for code that does not return JSX elements.
 
 ```javaScript
 useEffect(()=>{
@@ -1830,10 +1824,10 @@ useEffect(()=>{
           const places = await fetchUserPlaces();
           console.log("Places",places);
           setUserPlaces(places);
-          
+
        } catch (error) {
          setErrorState({message: error.message || "Failed to fetch user places"});
-       } 
+       }
       setIsFetching(false);
     }
     fetchPlaces();
@@ -1842,11 +1836,11 @@ useEffect(()=>{
 
 In the above code the useEffect and the logic inside of it we need it inside of the component we cannot put it into a separate component because it is a part of the component. This problem can be solved with custom react hooks.
 
-In normal scenarios where we need to reuse code we used functions, but here we already have a hook, so we cannot outsource it into a function. We can only use the react hooks (including state updates) inside of component functions. 
+In normal scenarios where we need to reuse code we used functions, but here we already have a hook, so we cannot outsource it into a function. We can only use the react hooks (including state updates) inside of component functions.
 
 It is a good practice to create a custom folder for keeping the custom hooks though it is totally optional. Inside this folder we can create a js file to store our custom hook, you can use any name for the js file. Inside this file we should create function, the name of the function should start with `use`. Functions that starts with `use `are treated as hooks in react. React will look for such functions in the project and enforce certain rules for those functions (such as using them only inside of a component function or custom hooks). These rules are important because using the hooks in wrong place could result in un expected behaviors. You should not clash the name of the custom hooks with the built in hooks in react. Custom hooks can make your component functions leaner. We also can use the same custom hook in other components to re use the functionality.
 
-A custom hook is just like a function, i.e it can receive parameters. This can make the custom hooks more generic and re usable. From the custom hook we can return the data like states for data, loading and errors in the form of either array or object. Most importantly we should export the custom hook function. The example code will look like: 
+A custom hook is just like a function, i.e it can receive parameters. This can make the custom hooks more generic and re usable. From the custom hook we can return the data like states for data, loading and errors in the form of either array or object. Most importantly we should export the custom hook function. The example code will look like:
 
 ```javaScript
 import { useEffect, useState } from "react";
@@ -1881,11 +1875,11 @@ import { useFetch } from "./hooks/useFetch.js";
 ```
 
 In our custom hook we are not just limited to exposing state values. We can also expose state updating functions and custom functions. We can also use aliases for functions and objects returned by the custom hook like:  
-`const {objectExposedFromHook : aliasName} = useCustomHook();` 
+`const {objectExposedFromHook : aliasName} = useCustomHook();`
 
 The use of custom hooks is same as that components. That is when ever you use a custom hook inside of a component the states and methods that are used inside the custom hook will have a dedicated instance where the hook is used. So using them in other components will not affect the state that is present in the hook. When ever you use the custom hook in another component a new snapshot for the state which is present inside of the hook.
 
-We will need to add the state updating functions exposed from the custom hook as dependencies for `useCallback `functions. 
+We will need to add the state updating functions exposed from the custom hook as dependencies for `useCallback `functions.
 
 We can create a promise by using the `Promise()` constructor provided by javascript. It takes in a function which automatically gets 2 parameters `resolve` and `reject`. In the function's body we can execute the code which we want which will return a promise. Then to makes sure that the value is returned we can call the `resolve `method and pass the value which should be returned by the promise. We can use the reject method to throw an error if anything goes wrong. The promise constructor can turn a code that does not return a promise to a code that returns a promise. The example code will look like:
 
@@ -1914,3 +1908,4 @@ export default function AvailablePlaces({ onSelectPlace }) {
   );
 }
 ```
+
