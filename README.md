@@ -1909,3 +1909,375 @@ export default function AvailablePlaces({ onSelectPlace }) {
 }
 ```
 
+A form is a collection of input fields. They are used in conjunction with labels. It is wrapped in the `form `element. We need to handle the submission i . e, extract the values entered by the user and you also need to validate the data that is provided by the user and show errors to the user if incorrect data has been provided. Handling the submission is relatively easy, we can managed the entered values through state. Alternatively we can use refs to extract values. Or we can use the `FormData `object which will provide the data in the form once it is submitted (this is a native browser feature and not a react specific feature).  
+Providing a good user experience is tricky when validating. You can validate on every keystroke this can cause errors to show up too early. Or you can validate the input field once it is lost the focus, but this way the errors may show up for too long. You can validate on form submission this way errors will be shown too late.
+
+We should choose an approach that is suitable for our use case by understanding the tradeoffs.
+
+In react we use the `htmlFor `attribute for connecting with the input field instead of `for `which we traditionally use for the `label `element. eg:
+
+```javaScript
+ <div className="control no-margin">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" name="email" />
+        </div>
+```
+
+By default even if you don't specify a button type to the button inside of a form, if you click it, the form will be submitted. It means that an http request is created and send to the server that is serving the application. This is also the case for react applications. In react applications this will cause problem because when the form is submitted the page is refreshed. When the page is refreshed in between the data is lost when submitting because the state might be lost in a full page refresh as well as it will interrupt the intended flow (you might want to send the data to an API but the page refresh will interrupt this).
+
+The react application server is not capable for handling this request generated from form. One way to fix this problem is by using the `type `prop to `button `for the submit button. This makes the button not submit the form when clicked.  
+A more elegant solution is to remove the `onClick `prop to the button and change it's type to default which is submit. Then for the form element we can use the `onSubmit `prop and pass the function which should handle the form submission. The form will automatically generate a submit event which we can listen to in react when ever a button is pressed inside of the form. In the function we will automatically get the `event `object. We can then call the `preventDefault()` method on this `event `object, which will prevent the default behavior. That is it will prevent the generation and sending of http request. This will prevent the page refresh. The example code will look like:
+
+```javaScript
+  function handleSubmit(event) {
+    event.preventDefault();
+    console.log("Submitted");
+  }
+  return (
+    <form onSubmit={handleSubmit}>
+.......
+<button className="button">Login</button>
+....
+```
+
+React also provides another way to handle forms in react version 19 and above. This is possible through a feature called form actions. But this approach will not work with react versions older than 19\. So the above method used in the example is most commonly used in react applications.
+
+To access the values from the form we can use state. We can use individual state variables for each input field or use a combined state object and store individual values as properties. Then we typically want to set change listeners to handle the input to these fields. Inside the change function we can set the state and use this state as value for the input element. This way every keystroke the user makes is fed back to the input field. The example will look like:
+
+```javaScript
+export default function Login() {
+  const [enteredEmail, setEnteredEmail] = useState("");
+  const [enteredPassword, setEnteredPassword] = useState("");
+  function handleSubmit(event) {
+    event.preventDefault();
+    console.log("enteredEmail", enteredEmail);
+    console.log("Entered password", enteredPassword);
+  }
+  function handleEmailChange(event) {
+    setEnteredEmail(event.target.value);
+  }
+  function handlePasswordChange(event) {
+    setEnteredPassword(event.target.value);
+  }
+  return (
+    <form onSubmit={handleSubmit}>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            onChange={handleEmailChange}
+            value={enteredEmail}
+          />
+          <input
+            id="password"
+            type="password"
+            name="password"
+            onChange={handlePasswordChange}
+            value={enteredPassword}
+          />
+      </div>
+        <button className="button">Login</button>
+      </p>
+    </form>
+  );
+}
+```
+
+In the above approach we will end up with a lot of state variables and change functions, so alternatively we can use a combined state. Then we can use a single function which accepts the event object as well as a field identifier which sets the values for the particular field. The function will look like:
+
+```javaScript
+  const [enteredValues, setEnteredValues] = useState({
+    email: "",
+    password: "",
+  })
+.....
+function handleInputChange(event, identifier){
+    setEnteredValues(prevState=>({
+      ...prevState,
+      [identifier]: event.target.value
+    }));
+```
+
+In the above code we are immediately returning an object from the state updating function that is why we are using `()` . Also we can use the special `[]` (**computed property name**)to put a identifier variable which is coming as an argument as the key to the state object. To this we are setting the data we got from the event. This function must be connected with the input fields like:
+
+```javaScript
+<div className="control-row">
+        <div className="control no-margin">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            onChange={(event) => handleInputChange(event, "email")}
+            value={enteredValues.email}
+          />
+        </div>
+ 
+        <div className="control no-margin">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            onChange={() => handleInputChange(event,"password")}
+            value={enteredValues.password}
+          />
+        </div>
+      </div>
+```
+
+We need to use the use the function form of the `onChange `event to pass the identifier along with the event.
+
+The above shown is only one possible way, another possibility is to use refs. We can create separate refs for the input fields and connect it using the `ref `prop. The example code will look like:
+
+```javaScript
+export default function StateLogin() {
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  function handleSubmit(event) {
+    event.preventDefault();
+    const enteredEmail = emailRef.current.value;
+    const enetedPassword = passwordRef.current.value;
+    console.log("Entered Email : ", enteredEmail);
+    console.log("Entered Password : ", enetedPassword);
+  }
+ 
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>Login</h2>
+ 
+      <div className="control-row">
+        <div className="control no-margin">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" name="email" ref={emailRef} />
+        </div>
+ 
+        <div className="control no-margin">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            ref={passwordRef}
+          />
+        </div>
+      </div>
+        <button className="button">Login</button>
+    </form>
+  );
+}
+```
+
+The advantage of this approach is that it requires less code than using states. The down side of this approach is that resetting the values in a clean way is harder. Because using refs to manipulate DOM is not considered a good practice. You will still end up with a lot of refs, if you have a complex form.
+
+When working with complex forms using multiple states and refs for each individual field can be cumbersome. That is why we should consider the built in native feature for getting hold of all those values. This is possible by a special constructor function that is built into the browser. It is called the `FormData()` constructor function. This makes it easy to get a hold of values entered into the form. For this we need to pass the form as input data for this constructor. For the form submission handling function, it will automatically receive the form from the `event.target` object. The `FormData `constructor will provide a form data object which will provide access to all the fields in the form. For this to work all the fields (including select fields) from which we want to extract the data should have a `name `prop. We can use the built-in methods of the form data object to access and modify the data.
+
+The `.get()` method of the form data can be used to get the value for a specific field by using the name we defined on the `name `prop. If there are many fields this can be difficult because we will have as many variables inside of the form submission handling functions as there are fields in the form. To solve this we can use the `Object.fromEntries()` method which is provided by the browser. We can then pass the formdata object by calling the `entries()` function as an argument to this. The entries method of the form data object will provide all the input fields and their values as an array. There is one potential problem with this, that is if you have multiple fields with same name, like checkbox or radio buttons they are lost from the entries and you wouldn't have values for that. You need to manually extract them and store them. We can use the `formdata.getAll()` method to get multiple values from the same input field. We can easily add this to the object by adding a new key. Example:
+
+```javaScript
+function handleSubmit(event) {
+    event.preventDefault();
+    const fd = new FormData(event.target);
+    const aquisitonChanel = fd.getAll("acquisition");
+    const data = Object.fromEntries(fd.entries());
+    data.acquisition = aquisitonChanel;
+    console.log("Data : ", data);
+  }
+```
+
+This is a relatively easier and quicker way of extracting all the data from the form.
+
+If we provide a button with `type `as `reset `upon pressing that button the form will be reset. When we are using states we can reset the states to reset the values in form. Similarly when using refs we can set the value of the ref to empty string to reset the input fields. This is not a recommended approach because in most cases you should let react update the DOM.  
+The form element also have a reset method which we can use, this does the same thing as pressing the reset button. We can use like: `event.target.reset()` on the form submission handling function. Even though this is imperative code we can use this because it is much less code than resetting individual states and refs.
+
+When we are using states to store the inputs on every keystroke we can define the validation logic inside of the component function body itself because for every keystroke the state is updated and the component function is re executed. Example:
+
+```javaScript
+ const emailIsInvalid = !enteredValues.email.includes("@");
+.....
+ <div className="control-row">
+        <div className="control no-margin">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            onChange={(event) => handleInputChange(event, "email")}
+            value={enteredValues.email}
+          />
+          <div className="control-error">
+            {emailIsInvalid && <p>Please enter a valid email address</p>}
+          </div>
+        </div>
+```
+
+This approach is not perfect because the error message will be shown right from the start and only goes away once we add an @ symbol to the input field.
+
+We might want to provide a chance to the users before showing the error message. We can ensure that by setting the validation variable once the user starts entering a value to the input field. So the above code will look like:
+
+```javaScript
+ const emailIsInvalid = enteredValues.email !== "" && !enteredValues.email.includes("@");
+```
+
+This approach also have flaws that is when we entered a correct value and erase it we are not showing any error. Another problem is that the error message will be displayed to the user as soon as the user starts typing into the field.  
+From this we can understand that we are showing the error message too early.
+
+Another way we can validate is when the input field has lost it's focus. We can check weather an element is out of focus by using the `onBlur `prop. The `onBlur `event will be fired automatically when the element lose the focus. We will need to manage a separate state to handle weather a field has been modified or not by the user. If the state has been edited they will lose focus. We can use this state to perform validation. This way we give the user a chance for editing before we show the error. The error message will only be shown when we change the focus of the input field.  
+The above approach offers a comparatively better user experience. But the down side of this approach is that the error might be shown for too long. Because if we have the error message on screen it will keeps showing until we provide a valid value. The example code will look like:
+
+```javaScript
+const emailIsInvalid = didEdit.email && !enteredValues.email.includes("@");
+ 
+  function handleInputBlur(identifier) {
+    setDidEdit((prevEdit) => ({
+      ...prevEdit,
+      [identifier]: true,
+    }));
+  }
+.......
+  <input
+            id="email"
+            type="email"
+            name="email"
+            onBlur={() => handleInputBlur("email")}
+            onChange={(event) => handleInputChange(event, "email")}
+            value={enteredValues.email}
+          />
+```
+
+The above shown method may be the user experience we want, but as a better way we can make sure that the error message disappears when the user starts typing on the input field. To do this we can set the didEdit state of the input field once the user starts typing again. The code will look like:
+
+```javaScript
+function handleInputChange(event, identifier) {
+    setEnteredValues((prevState) => ({
+      ...prevState,
+      [identifier]: event.target.value,
+    }));
+    setDidEdit((prevEdit) => ({
+      ...prevEdit,
+      [identifier]: false,
+    }));
+  }
+```
+
+This approach is the best of both worlds because we are validating on every keystroke as well as validating once the field has lost it's focus.
+
+There are also other ways of validating inputs apart from the above mentioned methods. We have seen that we can use refs to take the input. When using refs we cannot validate on every keystroke. We can only validate when the user submits the form. We can create additional variables inside of the form submission handling function and implement the validation logic. We still need to use states because we need to show the validation errors on the screen. We can manage the state to determine weather to show an error message on the screen or not. The code will look like:
+
+```javaScript
+export default function StateLogin() {
+  const emailRef = useRef();
+  const [emailIsInvalid, setEmailIsInvalid] = useState();
+  const passwordRef = useRef();
+  function handleSubmit(event) {
+    event.preventDefault();
+    const enteredEmail = emailRef.current.value;
+    const enetedPassword = passwordRef.current.value;
+    const isEmailValid = enteredEmail.includes("@");
+    if (!isEmailValid) {
+      setEmailIsInvalid(true);
+      return;
+    }
+    setEmailIsInvalid(false);
+    console.log("Sending http request.....");
+  }
+ 
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>Login</h2>
+      <div className="control-row">
+        <div className="control no-margin">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="text" name="email" ref={emailRef} />
+          <div className="control-error">
+            {emailIsInvalid && <p>Please enter a valid email address.</p>}
+          </div>
+        </div>
+```
+
+The approach you want to use totally up to you. Validation on submission is comparatively less code than validating on every keystroke and the focus state of the input element. Even when we are using keystroke based validation it is a good idea to also use submission based validation. Though the keystroke based validation provides a nice feedback to the user, when the user clicks on the submit button by avoiding the error message the empty data is sent. If we are sending this to a backend server this might cause problems, so it is a good idea to validate on submission also.
+
+When working with the `FormData `object there is an easier way to validate all the fields. We can use some built in validation props provided by the html to validate our input. The `required `prop which is one of such built in props. This let's the browser validate the input fields. The `required `attribute prevents the field to be empty when the form is submitting. Additionally it will also take the type of the input field into account, and not allow values that don't fit the format. For example when we use the required attribute with an input field with type email, it will enforce the email address format. We don't need to add any code of our own for this. Using the required attribute is not restricted to input fields, we can use it for select fields.  
+Apart from required we also have `minLength `attribute which is also a built in attribute. We can use this attribute to enforce a minimum length to the input field. This is particularly useful for fields like password field.
+
+We can add custom logic with the built in attributes. We can use states for these.
+
+If we have input fields with similar structure we can create a custom component. We can make it configurable by using props. For example:
+
+```javaScript
+export default function Input({ label, id, error, ...props }) {
+  return (
+    <div className="control no-margin">
+      <label htmlFor={id}>{label}</label>
+      <input id={id} {...props} />
+      <div className="control-error">{error && <p>{error}</p>}</div>
+    </div>
+  );
+}
+```
+
+We can also outsource the validation logic to make it re usable. We can store this logic in a separate js file and use it any where we want in our project.
+
+We can create a custom hook to manage the state. We can use this custom hook inside our custom input component. We can also manage the validation logic inside our custom hook. Since we are using a reusable hook we should not hardcode the logic into the hook but instead we can accept a function as an argument for the hook and perform the validation by calling the function. If we have multiple functions to execute for validating a field we can use an anonymous function and call those functions. We can repeat this approach for whichever input field we have. The custom hook will look like:
+
+```javaScript
+import { useState } from "react";
+ 
+export default function useInput(defaultValue, validationFn) {
+  const [enteredValue, setEnteredValue] = useState(defaultValue);
+ 
+  const [didEdit, setDidEdit] = useState(false);
+  const valueIsValid = validationFn(enteredValue);
+  function handleInputChange(event) {
+    setEnteredValue(event.target.value);
+    setDidEdit(false);
+  }
+  function handleInputBlur() {
+    setDidEdit(true);
+  }
+  return {
+    value: enteredValue,
+    handleInputChange,
+    handleInputBlur,
+    hasError: didEdit && !valueIsValid,
+  };
+}
+```
+
+And the component function will now look like:
+
+```javaScript
+import Input from "./Input.jsx";
+import { isEmail, isNotEmpty, hasMinLength } from "../util/validation.js";
+import useInput from "../hooks/useInput.js";
+ 
+export default function Login() {
+  const { value: emailValue, handleInputChange: handleEmailChange, handleInputBlur: handleEmailBlur, hasError: emailHasError } = useInput("", (value) => isEmail(value) && isNotEmpty(value));
+  const { value: passwordValue, handleInputChange: handlePasswordChange, handleInputBlur: handlePasswordBlur, hasError: passwordHasError } = useInput("", (value) => hasMinLength(value, 6));
+ 
+  function handleSubmit(event) {
+    event.preventDefault();
+    if (emailHasError || passwordHasError) return;
+    console.log(emailValue, passwordValue);
+  }
+```
+
+```javaScript
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>Login</h2>
+      <div className="control-row">
+        <Input label="Email" id="email" type="email" name="email" onBlur={handleEmailBlur} onChange={handleEmailChange} error={emailHasError && "Please enter a valid email."} value={emailValue} />
+        <Input label="Password" id="password" type="password" name="password" onBlur={handlePasswordBlur} onChange={handlePasswordChange} value={passwordValue} error={passwordHasError && "Please enter a valid password"} />
+      </div>
+      <p className="form-actions">
+        <button className="button button-flat">Reset</button>
+        <button className="button">Login</button>
+      </p>
+    </form>
+  );
+}
+```
+
+We can also use third party libraries that makes it easier to work with forms. There are libraries like `React Hook Form` and `Formik `which can help in getting use input and validating the input.
+
