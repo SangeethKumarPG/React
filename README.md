@@ -2281,3 +2281,244 @@ export default function Login() {
 
 We can also use third party libraries that makes it easier to work with forms. There are libraries like `React Hook Form` and `Formik `which can help in getting use input and validating the input.
 
+Form actions is another way to handle user inputs. It is available in react 19 and higher. We have seen that we can use the `onSubmit `prop on the form element to handle the form submission. If we are in a react version which is 19 or above we can use the `action `prop instead of `onSubmit `prop and pass the same form submission handling function. The `action `is not at all a new prop (or attribute), form elements always supported the action attribute. When we are not using react the action attribute will be used to set the path or URL to which the browser sends the data when the URL is submitted. But when using react if we use the action prop the function which we passed will be executed. Also inside of the function we don't need to manually call `event.preventDefault()` because react will call that for you. The form submission handling function will not get an `event `object instead it will receive a `formData `object.
+
+We had to create this manually using the previous approaches where we used the `Object.fromEntries()` method to convert values from the event to `formData `object.
+
+The `formData `object obtained from form action will have all the submitted data. We still need to add the name prop for all our input fields for this to work. We can extract individual fields using the `get `method on the `formData `object. After the form submission handling function is executed react will automatically clear the form fields. Example:
+
+```javaScript
+function signupAction(formData) {
+    const enteredEmail = formData.get("email");
+    console.log(enteredEmail);
+  }
+  return (
+    <form action={signupAction}>
+```
+
+We can extract multiple values from fields like check boxes by using `formData.getAll("name");` . For validation we can manually extract all the fields to respective variables and perform the validation. We can create an array to store the error data for different fields. We can then return this array from the form action function. If there is no error we can return a null value. To get a hold of the value that is returned by the action function we can use a special hook provided by react which is `useActionState`, we can import this from react. This is a new hook that is added in react 19\. Like all hooks we must use this inside of a component function or a custom hook. In our case we should define it after the form action function. Because the first argument to this hook is the form action function. It also need to have a form related state (action related state). Here we should pass the initial state value as the second argument.
+
+The useActionState hook returns an array, we can use the array destructing to store various elements just like the useState. It returns an array with 3 elements. The first element is the current form state, so initially it will have the initial state we passed as argument to the hook. This will have the error values returned by the form action function once it is executed and have errors. As the second argument we will get an updated form action. We have passed as action function as the first argument to the hook already, react will create a new function internally that is wrapped around our action. This way it can listen to the invocation of the action. This returned function is our defined action function itself but enhanced by react. This returned form action should be passed as action prop to our form. The final element we get back from the hook is a pending element which will be true or false based on weather the form is currently being submitted or not.
+
+This comes into picture when we are working with http requests to submit the data from form. If you don't have such an async action it is not mandatory to use this third element.  
+When we are using the `useActionState `hook the form action function is called in a different way. The formData will come as the second argument to our defined action function. The first argument will be the previous form state. It is possible that the action function is invoked multiple times, in that case react will provide the last form state as an input value, incase you want to base your new state on the old state. Even though we don't need it in our case we should accept it as an argument. The example code will look like:
+
+```javaScript
+import { useActionState } from "react";
+export default function Signup() {
+
+```
+
+```javaScript
+function signupAction(prevFormState, formData) {
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const confirmPassword = formData.get("confirm-password");
+    const firstName = formData.get("first-name");
+    const lastName = formData.get("last-name");
+    const role = formData.get("role");
+    const terms = formData.get("terms");
+    const acquisitionChanel = formData.getAll("acquisition");
+ 
+    let errors = [];
+    if (!isEmail(email)) {
+      errors.push("Invalid email address");
+    }
+    if (!isNotEmpty(password) || !hasMinLength(password, 6)) {
+      errors.push("You must provide a password with atleast 6 characters");
+    }
+    if (!isEqualToOtherValue(password, confirmPassword)) {
+      errors.push("Passwords do not match");
+    }
+    if (!isNotEmpty(firstName) || !isNotEmpty(lastName)) {
+      errors.push("Please provide both your first and last name");
+    }
+
+```
+
+```javaScript
+if (!isNotEmpty(role)) {
+      errors.push("Please select a role");
+    }
+    if (!terms) {
+      errors.push("You must agree to the terms and conditions");
+    }
+    if (acquisitionChanel.length === 0) {
+      errors.push("Please select at least one acquisition chanel");
+    }
+    if (errors.length > 0) {
+      return { errors };
+    }
+    return { errors: null };
+  }
+  const [formState, formAction] = useActionState(signupAction, {
+    errors: null,
+  });
+ 
+  return (
+    <form action={formAction}>
+....
+ </div>
+      {formState.errors && (
+        <ul className="error">
+          {formState.errors.map((error) => (
+            <li key={error}>{error}</li>
+          ))}
+        </ul>
+      )}
+      <p className="form-actions">
+        <button type="reset" className="button button-flat">
+          Reset
+        </button>
+        <button className="button">Sign up</button>
+      </p>
+    </form>
+....
+```
+
+The problem with this approach is that if you enter a valid data to a field and you have invalid data in your form, all the data in the form will be cleared even though there won't be any error message for the correct value entered to field. React will reset the form for you. This might not be something you need because you might need not to clear the valid values from the fields even if the form has invalid values.
+
+To fix the above problem we can adjust the signup action a little bit. For this we need to ensure that the values returned from the form action function should also have information about the entered values. We can use this information to prepopulate the input fields again so that the entered correct values are not lost. We can return an object which contains all the values extracted from the formData object. We can then use the `defaultValue `prop, and we can extract and set the value to the appropriate value from the `formState`. This way the entered data is repopulated into the input fields once the form is submitted. The action function code will look like:
+
+```javaScript
+if (errors.length > 0) {
+      return { errors, enteredValues: {
+        email,
+        password,
+        confirmPassword,
+        firstName,
+        lastName,
+        role,
+        acquisitionChanel,
+        terms,
+      } };
+    }
+```
+
+```javaScript
+ <input id="email" type="email" name="email" defaultValue={formState.enteredValues?.email}/>
+```
+
+We used the ? after the enteredValues because it might not exist, in such a case the value of the input field will be set into undefined.  
+For fields like checkbox and radio buttons we should use the `defaultChecked` prop and pass the date extracted from the `formState `as prop. This expects a boolean value so we should manually check if the value extracted from the formState matched the field. Example:
+
+```javaScript
+  <input
+            type="checkbox"
+            id="google"
+            name="acquisition"
+            value="google"
+            defaultChecked = {formState.enteredValues?.acquisitionChanel.includes("google")}
+          />
+```
+
+In case if you are setting a default value to select box this might not be reflected on screen because it is a react bug. It will always have the first option selected by default. For all other elements it works as expected.
+
+Now we have another problem that is the reset button will not work. By default the reset button resets the value of the fields to the value defined in the `defaultValue `prop. If we want to remove values from all the fields we will have to add some custom logic. If there are no errors the fields in the form will be reset this is as per the logic we defined, because we are not returning the `enteredValues `key if there is no error.
+
+There is one import thing about form actions. You don't need to create action functions inside of a component function, if in the action function you are not using any component specific data (props or state). We can move such action functions outside of the component functions to make the component functions leaner. We can also store these action functions in a separate file. This also have performance improvements because the action function will not be recreated every time the function is executed. If we are using props or state we should move the action function to the inside of the component function.
+
+If we are sending the data from form to a backend server the process is asynchronous. So we need to mark the form action function as async. This is supported by react. Form action functions can be either synchronous or asynchronous. If it marked as async react will wait till the promise from the asynchronous operation is resolved to mark the form as submitted.
+
+When submitting data through an API we have 2 ways to show the loading state when using form actions. The first way is that we can use the `pending `object which we will get as the third element from the `useActionState `hook. The value of pending will be true until the promise inside of the action function is resolved.  
+Alternatively we can use another hook which can be used in conjunction with form actions. This hook is present in the `react-dom` module. This is called the `useFormStatus()`. This hook cannot be used in the component that contains the form. It must be used in a nested component that is used inside of the form. We can create a new react component for the submit button and place this component inside of the form.  
+The `useFormStatus()` hook returns an object which has various information about the current form status. We can get the data that is submitted as well as other information. We can refer the official documentation to get an idea about this.
+
+For our case we are interested in the `pending `property. This will return either true or false depending on weather the form has been submitted or not. We can use this property to show conditional messages or actions inside of the form(the parts that are written in that component). The example code will look like:
+
+```javaScript
+import { useFormStatus } from "react-dom";
+ 
+export default function Submit() {
+  const { pending } = useFormStatus();
+  return (
+    <p className="actions">
+      <button type="submit" disabled={pending}>
+        {pending ? "Submitting..." : "Submit"}
+      </button>
+    </p>
+  );
+}
+```
+
+We can also trigger two different actions from a single form. We can do this by adding `formAction `props to buttons inside of a form and set different action functions. We can define separate action functions inside of the component and call them, we will still get the `formData `object as argument for these functions. Example:  
+`<button formAction={upvoteAction}>....</button>`  
+Based on these actions we can also send http requests to the backend.  
+From the action functions we can make API calls, because we can also make these functions async.  
+We can also use the `useActionState `hook to track the status of form submission, if we have multiple actions we need to call `useActionState `hook multiple times. For example:
+
+```javaScript
+  const { upvoteOpinion, downvoteOpinion } = use(OpinionsContext);
+  async function upvoteAction() {
+    await upvoteOpinion(id);
+  }
+  async function downvoteAction() {
+    await downvoteOpinion(id);
+  }
+  const [upvoteFormState, upvoteFormAction, upvotePending] =
+    useActionState(upvoteAction);
+  const [downvoteFormState, downvoteFormAction, downvotePending] =
+    useActionState(downvoteAction);
+....
+<button
+          formAction={upvoteFormAction}
+          disabled={upvotePending || downvotePending}
+        >
+....</button>
+<button
+          formAction={downvoteFormAction}
+          disabled={upvotePending || downvotePending}
+        >....</button>
+...
+```
+
+The above approach provides a good user experience but we have an even better approach. We can use the optimistic updating to ensure that the UI is instantly updated without waiting. We can use the `useOptimistic `hook for this. This hooks helps us with optimistic updates. For this hook it needs the first argument as the value which needs to be updated optimistically. This defines the initial state of the optimistically managed state. The second argument to the hook is a function that will be invoked by react at a point of time defined by you. This function will automatically receive a parameter which handles the old state that is managed by the `useOptimistic `hook. This function is responsible for returning a new state. Additional to that we can also pass our own parameters to this function which we can use inside of the function. The `useOptimistic `hook returns an array, it is like the useState hook because the first value is the state object and the second value is a function,
+
+which we can call to invoke the function defined with the `useOptimistic `hook. This function can be called in any form action of your choice. It must be used inside of a form action because `useOptimistic `hook is used in conjunction with the form action. This optimistic state is only shown on the UI once the form is being submitted. After the form is submitted this state will be thrown away and the actual UI state applied by some other code will be applied. Example:  
+` const [optimisticVotes, setVotesOptimistically] = useOptimistic(votes, (prevVotes, mode)=> mode === "up"? prevVotes+1 : prevVotes - 1);`
+
+Any argument which we pass to the function is forwarded to the function passed as argument to the hook. Though we should define these arguments.  
+The function should be called in form actions before we are sending the request to the API. The state associated with this will automatically be updated once the function is called.
+
+We can then use this state returned by `useOptimistic `as the value on the UI. The example will look like:
+
+```javaScript
+import { use, useActionState, useOptimistic } from "react";
+import { OpinionsContext } from "../store/opinions-context.jsx";
+export function Opinion({ opinion: { id, title, body, userName, votes } }) {
+  const { upvoteOpinion, downvoteOpinion } = use(OpinionsContext);
+  const [optimisticVotes, setVotesOptimistically] = useOptimistic(
+    votes,
+    (prevVotes, mode) => (mode === "up" ? prevVotes + 1 : prevVotes - 1),
+  );
+  async function upvoteAction() {
+    setVotesOptimistically("up");
+    await upvoteOpinion(id);
+  }
+  async function downvoteAction() {
+    setVotesOptimistically("down");
+    await downvoteOpinion(id);
+  }
+  const [upvoteFormState, upvoteFormAction, upvotePending] =
+    useActionState(upvoteAction);
+  const [downvoteFormState, downvoteFormAction, downvotePending] =
+    useActionState(downvoteAction);
+```
+
+```javaScript
+<form className="votes">
+        <button
+          formAction={upvoteFormAction}
+          disabled={upvotePending || downvotePending}
+        >....</button>
+<span>{optimisticVotes}</span>
+<button
+          formAction={downvoteFormAction}
+          disabled={upvotePending || downvotePending}
+        >....</button>
+...
+</form>
+```
+
+If the update were to fail it will rollback the value automatically.
+
