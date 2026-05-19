@@ -2522,3 +2522,82 @@ export function Opinion({ opinion: { id, title, body, userName, votes } }) {
 
 If the update were to fail it will rollback the value automatically.
 
+Javascript provides a built in way to format currencies. Example:
+
+```javaScript
+export const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+```
+
+We can create such an object and to apply the formatting we can use:  
+`currencyFormatter.format(meal.price);`
+
+To get the index of an item in an array we can use the `findIndex()` method on the array. It will accept a function which automatically receive the item as argument. Inside this function we can check condition to determine weather the item matches our condition. The index of the matched item will be returned from the function. If no matches are found it will return -1\. Example:
+
+```javaScript
+const existingCartItemIndex = state.items.findIndex((item)=>item.id === action.item.id);
+```
+
+The .splice() method is used to splice an array(remove). It takes in 2 arguments, the first one is the index from which we need to remove. The second argument is the number of values that need to be removed. We call this method on the array. eg:  
+`updatedItems.splice(existingCartItemIndex, 1);`
+
+The reduce() function is a function that let's us reduce an array into a single value. It takes a function as the first argument. And the second argument is the initial value. The function will automatically receive 2 values as arguments they are the new value which we want to derive and every item of the array as second value. Example:
+
+```javaScript
+const totalCartItems = cartCtx.items.reduce((totalNumberOfItems, item)=>{
+    return totalNumberOfItems + item.quantity;
+  },0);
+```
+
+We can use `useEffect `hook with `useRef `hook to open a modal. For example consider the below code:
+
+```javaScript
+import { createPortal } from "react-dom";
+import { useEffect, useRef } from "react";
+export default function Modal({ children, open, className = "" }) {
+  const dialogRef = useRef();
+  useEffect(() => {
+    if (open) {
+      dialogRef.current.showModal();
+    }
+  }, [open]);
+  return createPortal(
+    <dialog ref={dialogRef} className={`modal ${className}`}>
+      {children}
+    </dialog>,
+    document.getElementById("modal"),
+  );
+}
+```
+
+Here the open prop which is passed from outside of the component is used to determine weather the dialog should be shown or not. We are creating a ref locally to control the dialog element. Inside of the `useEffect `we are checking the open prop and calling the `showModal()` on the `dialogRef`. Since the open is a prop coming from outside the function and we need to show the modal based on it's value we should add it as dependency to `useEffect`.
+
+It is a good practice to organize the components into folders based on their functionality.
+
+The above approach works for opening the modal, but for closing the modal we need to use the clean up function of `useEffect `to close the modal. Since we are using refs inside of useEffect it is recommended to create a temporary constant to store the ref and use this constant for manipulating the ref. This is to ensure that the same ref is used for the function logic and cleanup function. This is not a strict requirement but a recommended pattern. The example code will now look like:
+
+```javaScript
+import { createPortal } from "react-dom";
+import { useEffect, useRef } from "react";
+export default function Modal({ children, open, className = "" }) {
+  const dialogRef = useRef();
+  useEffect(() => {
+    const modal = dialogRef.current;
+    if (open) {
+      modal.showModal();
+    }
+    return () => modal.close();
+  }, [open]);
+  return createPortal(
+    <dialog ref={dialogRef} className={`modal ${className}`}>
+      {children}
+    </dialog>,
+    document.getElementById("modal"),
+  );
+}
+```
+
+Even if we are using context api we can use prop drilling for one level if we want to make our component code leaner.
+
