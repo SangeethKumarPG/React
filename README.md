@@ -2601,3 +2601,413 @@ export default function Modal({ children, open, className = "" }) {
 
 Even if we are using context api we can use prop drilling for one level if we want to make our component code leaner.
 
+Redux is a state management system for cross component or app-wide state. State is the data which changes the UI. There are typically 3 types of states in react applications:
+
+- Local State: State belongs to a single component, eg listening to user input and setting the state on every keystroke. We typically use the `useState `hook for handling the simple states, and use the `useReducer `hook for handling complex states.
+- Cross component states: These are the states that affect multiple components, for example a button that opens a modal overlay. The definition for opening the model will be outside of the modal. To close the modal the button will be present inside of the modal. So we have multiple components utilizing the same state. We can use the same `useState `or `useReducer `hooks here also. We need to pass states and functions to modify these states as props to components. It requires props drilling and might often become complex if there are many components.
+
+- App wide states : There some states that affects the entire applications. They are called app wide states. An example for this would be user authentication. If a user is logged in we might need to change the navigation bar which needs to show more options for the logged in user. Other components as well might need to utilize this for displaying more options based on this. We can use the `useState `and `useReducer `hooks and pass it to other components using props drilling. Alternatively we can use `React Context` that helps in managing cross component and app wide states easier.
+
+Redux solves the same problem as React context which helps in cross component and app wide state management.
+
+We use redux because react context has some potential dis-advantages. This might not matter in some apps but are important in other apps. Though it is not strictly an either or decision, we can use a mix of both react context and redux in the same application. Normally we use redux for app wide state and use react context for general state sharing required between components.  
+The main disadvantages of react context are:
+
+- Complex setup and management: For small and medium applications this might not be a problem. If we are building a complex application we will have a lot of context providers and managing them will be cumbersome. Even if we use a single context provider component to store all the states, it will result in a very big context file and it will be difficult to manage.
+- Performance: The react context is useful for low frequency updates to the UI. For frequent updates we should use something like flux like state propagation. Redux is a flux like state propagation. So we should not use react context for frequent UI updates. Though this doesn't matter for small applications.
+
+Redux is all about having one central data (state) store in your application. You never have more than one store. Whichever cross component or app wide state we want we will store it inside the store. You don't need to manage the store the entire time. For the changes in data the components must know about the changes and update the UI accordingly. For this components sets up subscriptions to our central store. Whenever the data changes the store notifies the components and the components can get the data that they need. One important rule of redux is that components never directly change the data inside of the store. For manipulating the data we use reducers. We need to set up these reducer functions. These functions are responsible for mutating the state inside of the store. **NOTE:** We are not using the `useReducer`, reducer is a general concept which we use. Reducer functions takes in an input and transforms that input and reduce it. For example it can reduce a list of numbers into sum.
+
+We need to connect the components with the reducer functions to change the state. We have actions for this. The components will dispatch actions (trigger certain actions). An action can be thought of as a javascript object which describes the kind of operation that the reducer performs. Redux forwards the actions to the reducer which meets the description of the desired operation and the necessary mutation is performed. After the change is performed by the reducer will spit out a new state which effectively will replace the existing state in the central data store. After the store is updated the central store notifies the respective components which is subscribed to the store so that they can get these changes and update the UI.
+
+To understand the core concepts of redux we can create a new empty node js project and install the redux package using `npm install redux`. After this in the main js file we can import the redux package into an object using the node js `require() `function. Then we need to call the `createStore() `function on this redux object to create a store. We can store this store into an object. We use the store to manage data, and the data it manages is in the end determined by the reducer function. So we should add a reducer function. The reducer function we create here will be called by the redux library. It will always receive two arguments, the existing state and the action that is dispatched. The reducer function should always return a new state object. The reducer function should be a pure function. A pure function is function which produces same output for the same inputs and there will not be any side effects inside of the function.
+
+You must not send http requests, or write to local store or fetch something from local store inside of the reducer. We then need to connect the reducer function with the store by passing the reducer function as argument to the `createStore `method. After we need someone who will subscribe to the store and we need an action that can be dispatched. We can create a subscriber function. Inside of the subscriber function we can use the store object and call the `getState `method. The `getState()` method is automatically provided by redux when we create a store with `createStore()`. This `getState `method will provide us the latest snapshot of the state after it was updated. The next step is to make the redux aware of the subscriber function, for this we can call the `subscribe()` method on the store object. We need to pass the subscriber function as argument to the `subscribe `method. The passed function will be executed when the data in the redux store is changed.
+
+We just need to pass the pointer of the subscriber function to the subscribe method. We should provide a default value to the state argument of the reducer function so that we will not get undefined value error.  
+To create an action we can use the `dispatch()` method on the store object. Dispatch is a method that dispatches an action. Action is a javascript object with a type property which acts as an identifier, typically we use unique strings to describe the actions. The dispatch function will cause the reducer function to run again.
+
+Typically when using redux we need to perform different things inside of the reducer for different actions. That is why we are getting the state and action as argument for the reducer function. Inside of the reducer we can check the action to determine the operation to be performed. If no actions need to be performed on the state we need to return the existing state from the reducer function. Redux is not limited to react, we can use redux in any javascript project. The example code will look like:
+
+```javaScript
+const redux = require("redux");
+ 
+const counterReducer = (state = { counter: 0 }, action) => {
+  if (action.type === "increment") {
+    return { counter: state.counter + 1 };
+  }
+  if (action.type === "decrement") {
+    return { counter: state.counter - 1 };
+  }
+  return state;
+};
+const store = redux.createStore(counterReducer);
+ 
+const counterSubscriber = () => {
+  const latestState = store.getState();
+  console.log(latestState);
+};
+ 
+store.subscribe(counterSubscriber);
+ 
+store.dispatch({ type: "increment" });
+```
+
+To make it easy to work with redux in the react project we can use the `react-redux` package. This makes it easy to connect react components with stores and reducers simple.
+
+When working with redux in a react project we create a store folder inside of the src folder of the project. Inside this store we will create a js file which will define the store and reducer. We will then export the store object from this js file.
+
+To provide the redux store to the react components we will go to the main.jsx file or the index.js file (To the highest level we can go in the react application). Here we will import the `Provider `component from the `react-redux`. We will then wrap our `App `component with this imported `Provider `component. We can choose to wrap only certain components with provider but only those components will get access to the store. To make sure that we are getting the access to the store through out our application we are wrapping our App component with the provider.  
+We also need to tell react which store we are using in our application for this we need to import the exported store object here also. We should pass this `store `object as the value of `store `prop of the `Provider `component. The code will look like:
+
+```javaScript
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import "./index.css";
+import App from "./App";
+import store from "./store/index.js";
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+);
+```
+
+And the store file will now look like:
+
+```javaScript
+import { createStore } from "redux";
+ 
+const counterReducer = (state = { count: 0 }, action) => {
+  if (action.type === "increment") {
+    return {
+      count: state.count + 1,
+    };
+  }
+  if (action.type === "decrement") {
+    return {
+      count: state.count - 1,
+    };
+  }
+  return state;
+};
+ 
+const store = createStore(counterReducer);
+ 
+export default store;
+```
+
+To access the value from store inside of a component we can use the `useSelector `hook provided by the `react-redux` module. We can also alternatively use the `useStore `hook but the `useSelector `automatically let's us select the part of the state that is managed inside of the store.  
+The `useSelector `hook requires a function as argument, this function determines which piece of data we want to extract from store. This function will get the complete state object managed by store as argument automatically, from the function we can return the slice of data we want from the received state object. When we use the use the `useSelector `hook react-redux will automatically setup a subscription for the redux store for the component. The component will be updated and it will automatically receive the new value when the value is changed in the store. When the component is removed from the DOM react-redux will automatically un subscribe from the store.
+
+The code will look like:
+
+```javaScript
+import { useSelector } from "react-redux";
+......
+ const counter = useSelector((state) => state.count);
+```
+
+To dispatch an action we can use the `useDispatch `hook. We don't need to pass any argument to this hook, it will give us a dispatch function which we can use to dispatch actions against the redux store. We call this `dispatch()` method with an object having the `type `attribute to specify the action defined in the reducer function. The example code will look like:
+
+```javaScript
+import { useSelector, useDispatch } from "react-redux";
+import classes from "./Counter.module.css";
+ 
+const Counter = () => {
+  const toggleCounterHandler = () => {};
+  const counter = useSelector((state) => state.count);
+  const dispatch = useDispatch();
+  const incrementHandler = () => {
+    dispatch({ type: "increment" });
+  };
+ 
+  const decrementHandler = () => {
+    dispatch({ type: "decrement" });
+  };
+  return (
+    <main className={classes.counter}>
+      <h1>Redux Counter</h1>
+      <div className={classes.value}>{counter}</div>
+      <div>
+        <button onClick={incrementHandler}>Increment</button>
+        <button onClick={decrementHandler}>Decrement</button>
+      </div>
+      <button onClick={toggleCounterHandler}>Toggle Counter</button>
+    </main>
+  );
+};
+ 
+export default Counter;
+```
+
+We can also use redux with class based components. There are alternative methods for using the redux since the class based components does not support hooks. We can use the `connect `method from `react-redux` which we can use connect class based components with redux. We can also use it for functional components, but using hooks is more convenient there. To use this when exporting the class we will export the connect function and pass the component class as argument when the function is executing. This is a 2 step execution. First it will call the connect method and it will return a function as result, the obtained result function will be called immediately with the component as argument. This is called **currying**. The connect function also wants some arguments. The first argument is a function that maps the redux state to props which we will receive in the component. We should define this function outside of the class component.
+
+We can choose any name for this function but a common convention is to use `mapStateToProps`. This function will automatically receive the state as argument. This is the equivalent of `useSelector `hook. This function will return an object and the keys of this object will be available as props in the receiving component. For the values we can drill into the redux state and set it for the keys of the objects. We will pass the mapStateToProps as first argument to the connect function.  
+The second argument to the connect function is `mapDispatchToProps `which also we should define. This is equivalent of `useDispatch `hook. This let's us define dispatch functions inside of props which we can use inside of our component. These functions when executed will dispatch an action. The `matchDispatchToProps `will automatically receive the `dispatch `function as argument.
+
+This will also return an object where the keys are prop names, and for the value we will define anonymous function which will call the dispatch method with the specified action passed as argument. We can use these keys(props) as functions inside of the component class. Even when using the connect function react redux will create a subscription and manage the subscription for you. The code will look like:
+
+```javaScript
+import { Component } from "react";
+import { useSelector, useDispatch, connect } from "react-redux";
+```
+
+```javaScript
+class Counter extends Component {
+  incrementHandler() {
+    this.props.increment();
+  }
+  decrementHandler() {
+    this.props.decrement();
+  }
+  toggleCounterHandler() {}
+  render() {
+    return (
+      <main className={classes.counter}>
+        <h1>Redux Counter</h1>
+        <div className={classes.value}>{this.props.counter}</div>
+        <div>
+          <button onClick={this.incrementHandler.bind(this)}>Increment</button>
+          <button onClick={this.decrementHandler.bind(this)}>Decrement</button>
+        </div>
+        <button onClick={this.toggleCounterHandler}>Toggle Counter</button>
+      </main>
+    );
+  }
+}
+const mapStateToProps = (state) => {
+  return {
+    counter: state.count,
+  };
+};
+const mapDispatchToProps = (dispatch) => {
+  return {
+    increment: () => dispatch({ type: "increment" }),
+    decrement: () => dispatch({ type: "decrement" }),
+  };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(Counter);
+```
+
+We will also have actions that has values. We can also pass additional data when dispatching actions. We can do this by passing the data in different keys when dispatching the action. We can extract the values passed in the reducer function by accessing the keys from the action object. For example:
+
+```javaScript
+ const increaseHandler = () => {
+    dispatch({ type: "increase", amount: 5 });
+  };
+.....
+        <button onClick={increaseHandler}>Increase By 5</button>
+```
+
+From the component function we can dispatch an action like this and inside of the reducer we can use like:
+
+```javaScript
+if (action.type === "increase") {
+    return {
+      count: state.count + action.amount,
+    };
+  }
+```
+
+Note that the key name that we passed from the dispatch should match the key name we have in the reducer function.
+
+We can also manage multiple states inside of a store. For this we need to manage the state in the reducer function for all the action types so that the state remains consistently across updates. For example in the above example code if we add an additional state for showing the counter the reducer function will look like:
+
+```javaScript
+const counterReducer = (state = { count: 0, showCounter: true }, action) => {
+  if (action.type === "increment") {
+    return {
+      showCounter: state.showCounter,
+      count: state.count + 1,
+    };
+  }
+  if (action.type === "decrement") {
+    return {
+      showCounter: state.showCounter,
+      count: state.count - 1,
+    };
+  }
+  if (action.type === "increase") {
+    return {
+      showCounter: state.showCounter,
+      count: state.count + action.amount,
+    };
+  }
+  if (action.type === "toggle") {
+    return {
+      showCounter: !state.showCounter,
+      count: state.count,
+    };
+  }
+  return state;
+};
+```
+
+To use this we can use the `useSelector `hook to extract the data. Like:  
+` const showCounter = useSelector((state) => state.showCounter);`
+
+**NOTE**: From the reducer action we will always a brand new object which redux will use to replace the existing state. The objects we are returning from the reducer will not be merged with the existing state object. They will be overridden. So it is important that we should maintain the other state values when we are updating a piece of state.  
+Even when you directly change the value from a state object inside of the reducer it will work, but you should not do this when working with redux. You should never mutate the existing state when working with redux. You should always override it by returning a new object. You should never mutate the state values directly. Always copy the values and then only mutate and return a new state.
+
+The more complex our project becomes the more it is difficult to use redux correctly. There is a slightly easier way of using redux. The potential issues we might face when our application grows and we have more number of states we need to manage with redux are:
+
+- Action types: We need to make sure that there are no typos in the action identifiers. We should also ensure that the identifier names are unique. As a workaround we can create constants to store the identifier values across the application.
+- State data: The more data we need to manage the larger the state object will be. We will need to copy our state properties and the reducer function will get longer. This makes the redux file large.
+- State immutability: We need to respect the state immutability. If we have a complex application we will have nested objects and arrays inside of the state, in such cases it is easy to make mistakes and change the data.
+
+There is a library called redux toolkit, which makes it easier to work with redux. To install this we can use:  
+`npm install reduxjs/toolkit`  
+We can uninstall `redux `package because it is already included in the redux toolkit package.
+
+To use this we can go to the js file in the store and import the `createSlice `from the` reduxjs/toolkit` package. There is also a `createReducer `function but the `createSlice `function is much more powerful.  
+The `createSlice `function want's an object as an argument. What we are trying to do with `createSlice `is that we are creating a slice of the global state. When we have different pieces of states that are not related, we can create different slice(potentially in different files) to make our code maintainable. Every slice need a name which we define by setting the `name `key. We can give any string of our choice as value for this key.  
+The second key we need to set is the `initialState `key. We need to set the initial state object here which defines the values of the states initially.  
+The third key we need to set is the `reducers`. It is also an object (map) for all the reducers that will work with this slice. We can create methods inside this with any name of our choice.
+
+Every method we define in this will receive the latest state automatically. These methods will be called for you by redux. They will also receive the action, but we don't need that here because, these methods will be called automatically depending on the action that is triggered. We don't need to write separate if checks any more, this also reduces some boiler plate code.  
+Inside of these methods we are allowed to mutate the state. Because redux toolkit internally uses `immer `which is a javascript package which convert these direct state mutations into immutable state mutations. They will clone the existing state, create a new state object, keep the states which are not edited and override the state which we are editing in an immutable way. So the developer don't need to worry about immutability.  
+We can use the automatically received action object for the reducer functions to extract the payload. It is not mandatory to accept this attribute if we are not using it inside the function.
+
+The code will look like:
+
+```javaScript
+import {createSlice} from "@reduxjs/toolkit";
+ 
+createSlice({
+  name: "counter",
+  initialState: {count: 0, showCounter:true},
+  reducers:{
+    increment(state){
+      state.count++;
+    },
+    decrement(state){
+      state.count--;
+    },
+    increase(state, action){
+      state.count = state.count + action.amount;
+    },
+    toggleCounter(state){
+      state.showCounter = !state.showCounter;
+    },
+  }
+});
+```
+
+To use the slice we need to capture the return value of the `createSlice()` method. Then to the `createStore `method pass `reducer `object of the created slice object. This is fine if you have only one slice. But if you have multiple slices we cannot reducers of individual slices to the `createStore `method, instead we will use the `configureStore `method from the `@reduxjs/toolkit module`. This is similar to createStore but makes the process of merging multiple reducers into one reducer easier. To this configure store we can pass a configuration object. On this object we will set the `reducer` property. Even if we are using this `configureStore `method it still only needs a single main reducer function. If there is a single reducer we can pass it like `sliceObject.reducer`. If we have multiple reducers we can pass an object to the reducer. We can set keys with any name for the individual reducer and pass the reducer of the slice object as value.
+
+Behind the scenes the `configureStore `will convert all the reducers method into a single method.
+
+The `createSlice `will automatically create unique identifiers for our different reducer functions. We can access them by using the `sliceObject.actions` property which will have action creator methods which we have the same name as defined inside of the reducer. But when we call them it will create an action object for us. So these methods are called action creators. These actions will have a unique type property for each action automatically created behind the scenes. Calling these action creator methods will dispatch the particular action.  
+As a developer we don't need to create action objects on our own, create unique action identifiers and worry about typos.  
+We can export the `sliceObject.actions` from the redux file so that we can access this action creator function in other files. The complete store file will look like:
+
+```javaScript
+import { createSlice, configureStore } from "@reduxjs/toolkit";
+ 
+const counterSlice = createSlice({
+  name: "counter",
+  initialState: { count: 0, showCounter: true },
+  reducers: {
+    increment(state) {
+      state.count++;
+    },
+    decrement(state) {
+      state.count--;
+},
+    increase(state, action) {
+      state.count = state.count + action.payload;
+    },
+    toggleCounter(state) {
+      state.showCounter = !state.showCounter;
+    },
+  },
+});
+ 
+ 
+const store = configureStore({
+  reducer: counterSlice.reducer
+});
+ 
+export const counterActions = counterSlice.actions;
+export default store;
+```
+
+To use these actions, import the exported actions object. To trigger an action, call the `dispatch()` method and pass it the result of calling the specific action creator (e.g, `dispatch(actions.someAction())`). You must invoke the action creator function (using parenthesis ()) at that moment. This ensures you are passing the actual action object to `dispatch()`, rather than passing the function definition itself.  
+If we have payload we still call the action creator function, but we will pass the payload data to this function call as argument. We can pass any type of data, but care should be taken when we are extracting the data. Any data we pass to the action creator will be stored in the `payload `property of the action object. The name payload is set by the redux toolkit and we cannot change it. So we should extract the data from the payload property. Example of dispatching actions:
+
+```javaScript
+import { counterActions } from "../store/index.js";
+ 
+const Counter = () => {
+  const toggleCounterHandler = () => {
+    dispatch(counterActions.toggleCounter());
+  };
+  const counter = useSelector((state) => state.count);
+  const showCounter = useSelector((state) => state.showCounter);
+  const dispatch = useDispatch();
+  const incrementHandler = () => {
+    dispatch(counterActions.increment());
+  };
+ 
+  const decrementHandler = () => {
+    dispatch(counterActions.decrement());
+  };
+ 
+  const increaseHandler = () => {
+    dispatch(counterActions.increase(10));
+  };
+  return (
+...........);
+}
+```
+
+Even though we can manage multiple states inside of a single slice, it may not be suitable in all cases. It is a good idea to separate the concerns. We can create another slice using the same `createSlice `function and initialize it with different initial values and the reducers. In the `configureStore `method we can then set the reducer as an object and pass the different reducers as a map where key can be any string and the value is the reducer object of each slice object. Example:
+
+```javaScript
+const store = configureStore({
+  reducer: { counter: counterSlice.reducer, auth: authSlice.reducer },
+});
+```
+
+To use the values of the state inside of the components we need to use these keys to access those values when using the `useSelector `hook. In the example scenario if we want to access the state for the counter slice we need to use like:
+
+```javaScript
+const counter = useSelector((state) => state.counter.count);
+const showCounter = useSelector((state) => state.counter.showCounter);
+```
+
+This might look counter intuitive inside of the selector we are first accessing the specified slice's reducer to get the latest state and then we are accessing that respective property from the state.
+
+When using redux toolkit it makes sense to create separate files for every slices. We will manage the state specific to that slice in this file. It will look like:
+
+```javaScript
+import { createSlice } from "@reduxjs/toolkit";
+ 
+const authSlice = createSlice({
+  name: "auth",
+  initialState: {
+    isAuthenticated: false,
+  },
+  reducers: {
+    login(state) {
+      state.isAuthenticated = true;
+    },
+    logout(state) {
+      state.isAuthenticated = false;
+    },
+  },
+});
+export default authSlice;
+```
+
+We can import this slice in the main store file where we configure our store. Or alternatively we can export the reducer object of the slice from the slice file, since we are only using the reducers of the slice in the main store file.  
+Like:  
+`export default authSlice.reducer;`  
+And in the main store file we can import it as:  
+`import authReducer from "./auth.js";  
+`If you are using the above method you will also need to export the action from the same slice file like:  
+`export const authActions = authSlice.actions;`
+
