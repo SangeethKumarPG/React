@@ -3011,3 +3011,150 @@ And in the main store file we can import it as:
 `If you are using the above method you will also need to export the action from the same slice file like:  
 `export const authActions = authSlice.actions;`
 
+**NOTE:** The reducer functions in redux must be pure, side effect free and synchronous.  
+When working with code with side effects we can write the code that have side effects inside of the component with the `useEffect `hook, and after this we can dispatch the action.  
+Another alternative is to create our own action creators, as part of these action creators we can perform asynchronous tasks without changing the reducer function.
+
+In some cases the backend will not do all the work the work. We might need to format the data in such a way that it is acceptable in the backend. This is the case for backends like firebase. We cannot send the http requests from the reducer functions, as mentioned previously we have 2 options which we can use for this. We can write it inside of the component or inside of the action creator.  
+In a regular component we cannot mutate the state directly, it is only possible inside of the reducer functions. If we mutate it the redux store will not be aware of the change and the change will exist only in memory. This is why we don't directly modify the states in redux inside of a component.  
+For side effect free code such as data transformations reducers are preferred. Avoid action creators or components for cases where we have asynchronous code (code with side effects).
+
+When we want to sync the local redux state with the data in the server we can listen to the changes of the state inside of a component and when the state is changed we can make the http request. We can use the `useEffect `hook for this. The example code will look like:
+
+```javaScript
+import Cart from "./components/Cart/Cart";
+import Layout from "./components/Layout/Layout";
+import Products from "./components/Shop/Products";
+import { useSelector } from "react-redux";
+import {useEffect} from "react";
+function App() {
+  const showCart = useSelector((state) => state.ui.cartIsVisible);
+  const cart = useSelector(state=>state.cart);
+  useEffect(()=>{
+    fetch("https://shopping-website-46-default-rtdb.firebaseio.com/cart.json", {method: "PUT", body: JSON.stringify(cart)});
+  },[cart]);
+  return (
+    <Layout>
+      {showCart && <Cart />}
+      <Products />
+    </Layout>
+  );
+}
+ 
+export default App;
+```
+
+If the state is used app wide we can place that logic inside of the app component. In this case we will update the state first inside of the redux store and once that update is completed then only we will send http request to the backend.  
+An issue with the current approach is that whenever the application starts the cart is empty, so when even if there are items in the cart in the backend this will be overridden to empty. To fix this we can create a global variable inside of the component file, something like `isInitial = true`, and we can check it's value before sending the data through fetch inside of `useEffect`. It will look like:
+
+```javaScript
+if(isInitial){
+      isInitial = false;
+      return;
+    }
+    sendCartData().catch((error) => {
+.....
+```
+
+Since this variable is set outside of the component function it's value will remain the same. We are setting it false before returning from the useEffect function. So this way the above mentioned issue is resolved.
+
+If we are dispatching an action inside of `useEffect`, we should add it to the dependency array. We can safely add it to the dependency array because react will ensure that only one instance of the dispatch is created for the component.
+
+There is an alternative to putting all the side effect logic into the component. This is through the form of action creator. We have already used the action creator. For dispatching actions when using the redux toolkit we used the action creators which are provided by redux. We can also manually create those action creators. This is done through **thunks**. Thunks are functions that delays an action until later. We can create an action creator as a thunk which does not immediately return the action object but returns another function which eventually returns the action (In javascript we can write functions that return functions). This way we can run some code before actually dispatching the action.  
+Thunks are also created in the same file as slices. We typically write thunks after creating the slice.
+
+We can return another function from the thunk function. This will receive dispatch function as argument. With dispatch we can perform the actual action we want to perform. Before we call dispatch we can write any code that that has side effects. We can also dispatch other actions from other slices inside of a thunk function. We can make the returning function async and perform asynchronous operations inside of the function. We can also create additional async functions inside of the function that is returning. Example of thunk function:
+
+```javaScript
+export const sendCartData = (cart) => {
+  return async (dispatch) => {
+    dispatch(
+      uiActions.showNotification({
+        status: "pending",
+        title: "Sending...",
+        message: "Sending cart data",
+      }),
+    );
+    const sendRequest = async () => {
+      const response = await fetch(
+        "https://shopping-website-40246-default-rtdb.firebaseio.com/cart.json",
+        { method: "PUT", body: JSON.stringify(cart) },
+      );
+      if (!response.ok) {
+        throw new Error("Sending cart data failed");
+      }
+    };
+    try {
+      await sendRequest();
+      dispatch(
+        uiActions.showNotification({
+          status: "success",
+          title: "Success!",
+          message: "Send cart data successfully!",
+        }),
+      );
+    } catch (error) {
+      dispatch(
+        uiActions.showNotification({
+          status: "error",
+          title: "Error!",
+          message: "Sending cart data failed!",
+        }),
+      );
+    }
+  };
+};
+```
+
+The great thing about redux toolkit is that it will also accept action creators that return functions apart from the regular action object with a type property. If we are passing an function instead of the action object it will execute that function for you and it will provide that dispatch argument automatically. This way in that executed function we can dispatch again. Therefore we can create action creators that can handle side effects and dispatch other actions. To actually use the above defined function we can also use the dispatch() method. Inside it we can call this function with the relevant argument. The code will look like:
+
+```javaScript
+import { sendCartData } from "./store/cart-slice.js";
+.....
+useEffect(() => {
+    if (isInitial) {
+      isInitial = false;
+      return;
+    }
+    dispatch(sendCartData(cart));
+  }, [cart, dispatch]);
+```
+
+You can choose any method you want but the above method make the component function leaner.
+
+If the slice file is getting bigger we are free to create separate files for creating the thunk functions.  
+For fetching the data from the backend we can also create a thunk function and perform the API call from there and set the data to the redux store using actions which let's us set the state. The code will look like:
+
+```javaScript
+export const fetchCartData = () => {
+  return async (dispatch) => {
+    const fetchData = async () => {
+      const response = await fetch(
+        "https://shopping-website-40246-default-rtdb.firebaseio.com/cart.json",
+      );
+      if (!response.ok) {
+        throw new Error("Could not fetch cart data");
+      }
+      const data = await response.json();
+      return data;
+    };
+    try {
+      const cartData = await fetchData();
+      dispatch(cartActions.replaceCart(cartData));
+    } catch (error) {
+      dispatch(
+        uiActions.showNotification({
+          status: "error",
+          title: "Error!",
+          message: "Fetching cart data failed!",
+        }),
+      );
+    }
+  };
+};
+```
+
+There is a small problem with the above approach that is when load the page initially it will call for sending the data because in the effect we have added the cart state as dependency. So when we are replacing the cart it will trigger a state update and hence it will send data again after fetching. To avoid this we can add a `changed `property to the cart state. And in the reducer functions where we are changing the state we can set it true where we are truly changing the state. And in the component's use effect function we can check this property and determine weather to send the data or not.
+
+Redux devtools makes the debugging easier. If there are a lot of states and slices for your application it can be difficult to find errors. The redux devtools chrome extension helps you to view all the data managed by redux in the store. It also helps us to see the actions that are dispatched. We can also see the data that is changed by the action. By using the diff tab we can see the difference in the state data. We are also able to navigate to the previous states and see it's impact on the screen. For normal redux we need to do some extra configuration in your code for dev tools to work, but for redux toolkit it will work out of the box.
+
