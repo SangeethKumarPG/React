@@ -3158,3 +3158,853 @@ There is a small problem with the above approach that is when load the page init
 
 Redux devtools makes the debugging easier. If there are a lot of states and slices for your application it can be difficult to find errors. The redux devtools chrome extension helps you to view all the data managed by redux in the store. It also helps us to see the actions that are dispatched. We can also see the data that is changed by the action. By using the diff tab we can see the difference in the state data. We are also able to navigate to the previous states and see it's impact on the screen. For normal redux we need to do some extra configuration in your code for dev tools to work, but for redux toolkit it will work out of the box.
 
+For complex applications we might need to separate the pages and link pages instead of forcing users to start on the start page and navigate to different areas manually. In some cases it would we easier to provide a url so that it loads a particular page on the screen. But till now we worked with single page application where there is only a single page where the data is displayed and changed with the help of javascript. This is where single page application routing comes into the picture. This helps us to build single page applications that have urls which can open different parts of the application.
+
+In regular websites we can append strings after the domain's url which will take us to that particular page if it exists. We can also use the hyperlinks in the page which let's us navigate to different pages of the website. The core concept is that different url paths shows different content in the screen. In normal websites we use different html files for that. The disadvantage is that we need to fetch new content and a new http request is sent and a response is received. This can break the flow because there might be some lag in between. This might lead to bad user experience. This is why prefer single page applications for more complex user interfaces. For the single page application the browser will send only one request where it will load the html page and a bunch of javascript files associated with the page. This js will take care and adjust what the user is seeing on the screen.
+
+For single page applications we can implement routing by watching over the url and if it changes we can load the corresponding component. This feature is not built into react so for this we need into install a separate package.
+
+We will use the `react-router-dom` package for this. We can install this using:  
+`npm install react-router-dom`
+
+Setting up routing is a 3 step process.
+
+The first step is defining which all routes are supported, and which component should be loaded for the corresponding path.
+
+The second step is to activate our router and load the route definitions that defined in the first step.
+
+The third step is to ensure that we have all the components that we do want to load and we provide a means for navigating between those pages so that users can move through different pages.
+
+For the first step we need to go the App.js file and import the `createBrowserRouter `function from the `react-router-dom` package. This allows us to define our routes. To this function we pass an array of route definition objects. Every object will represent one route. We call this function outside of the App function. We should define the `path `property for the object (path is the part that comes after domain). This path property determines the route to be activated. We typically store the pages of the application in a folder named pages (though you can name it as you want). The second property of this object is the `element `property. The element property defines the JSX element to be loaded corresponding to the specified path. You can pass any code you want but typically you will pass JSX elements. We should store the value returned by the `createBrowserRouter `into an object to use it for routing.
+
+To tell react that this router object should be used we need to import the `RouterProvider `component from the `react-router-dom`. It is a regular JSX component which we can wrap with other JSX code. From the app component for now we can only only return the `RouterProvider `component so that the components are loaded corresponding to the paths. The `RouterProvider `component has a `router `prop to which we will pass the router object we got from the `createBrowserRouter`. The example code will look like:
+
+```javaScript
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import HomePage from "./pages/Home.js";
+const router = createBrowserRouter([{ path: "/", element: <HomePage /> }]);
+function App() {
+  return <RouterProvider router={router} />;
+}
+ 
+export default App;
+```
+
+This will load the HomePage components as the default page(when you have no route specified with the URL) when you open the application initially.
+
+We can add any number of paths to this `createBrowserRouter `array as objects by defining the path and the element which should be loaded based on the path. If you try to visit a path which does not have corresponding component it will throw an error in the page generated by react-router-dom.  
+The above defined approach is the newest form. In the older versions of react router we define routes within the JSX code, instead of defining javascript objects.  
+Alternatively we can use the `createRoutesFromElements `function from `react-router-dom` package. This lets us define the routes in JSX code. The example code will look like:
+
+```javaScript
+const routeDefinitions = createRoutesFromElements(
+  <Route>
+    <Route path="/" element={<HomePage />} />
+    <Route path="/products" element={<ProductsPage />} />
+  </Route>,
+);
+```
+
+This also servers the same purpose. Note that we should import the Route component also from the `react-router-dom `module.
+
+For the above code to work we should pass the `routeDefinitions `object to the `createBrowserRouter `funciton. Like:  
+`const router = createBrowserRouter(routeDefinitions);`  
+You can choose any approach as you wish.
+
+We provide links in the pages so that users can navigate to different routes without manually entering the route in the url of the browser. We can use the anchor tag and set the href attribute to navigate to the path when the user clicks on the link. But there is a potential problem with this approach. When user clicks on the link it will send a new request to the server that serves the page and fetches back the page (component) corresponding to the route. Simply put the page refreshes. This causes all the javascript code to load again. This will impact the site performance which we want to avoid.  
+To prevent this default behavior we can use the `Link `component provided by `react-router-dom`. We should import it in the component where we want to implement the navigation. We use this component instead of the default anchor element. It has a `to `attribute instead of the ref attribute. For the to attribute we will specify the path to which we want to navigate.
+
+The link component under the hood uses the anchor element, it listens for clicks on that element, prevents the default behavior that sends http request, then it looks at the route definitions to update the page accordingly and loads appropriate content. It will also change the url without creating an http request.
+
+```javaScript
+import { Link } from "react-router-dom";
+function HomePage() {
+  return (
+    <>
+      <h1>My home page</h1>
+      <p>
+        Go to <Link to="/products">the list of products</Link>
+      </p>
+    </>
+  );
+}
+ 
+export default HomePage;
+```
+
+The Link tag will only work inside of the `RouterProvider `component. So we cannot use it outside or the same level as the `RouterProvider `component. What we can do is create a wrapper for wrapping the other components and load that as the first page of the app by setting it into the root path. Then we should use the `createBrowserRouter `method to create the routes, set this component as the root by setting the path and element. Also we add an additional `children `property to this object. This is set as an array. This array is used to set more nested route definitions. The root component will act as wrapper to these routes. In the wrapper component we should define the position of the children components should be rendered.  
+The definition of wrapper will look like:
+
+```javaScript
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      { path: "/", element: <HomePage /> },
+      { path: "/products", element: <ProductsPage /> },
+    ],
+  },
+]);
+```
+
+To specify the position of the child components in the wrapper component we must import the `Outlet `component from the `react-router-dom`. This component marks the place the child component is rendered. The `RootLayout `component will look like:
+
+```javaScript
+import { Outlet } from "react-router-dom";
+import MainNavigation from "../components/MainNavigation.js";
+function RootLayout() {
+  return (
+    <>
+      <MainNavigation />
+      <Outlet />
+    </>
+  );
+}
+ 
+export default RootLayout;
+```
+
+We add other routes as children of the wrapper route. If we are having a large application we will have multiple wrapper components based on the functionality.
+
+To set up an error route we can provide a `errorElement `definition to our route definition to define which page should be loaded when an error occurs. We can use this on any route. Error will be generated automatically by react router dom if we visit a page that does not exist. The code to define error page will look like:
+
+```javaScript
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { path: "/", element: <HomePage /> },
+      { path: "/products", element: <ProductsPage /> },
+    ],
+  },
+]);
+```
+
+In modern websites the active item on the nav bar will be highlighted, also user will get a feedback when he hovers over the nav bar item. This behavior is easy to support with react router dom. We can set up the styles for the hover and active items using CSS. To show the active page react-router-dom has an alternative to the `Link `component. It is the `NavLink `component. It has a special behavior, if we add a `className `prop which will take in a function as value. The function should return the css class name that should be added to the anchor tag. The function automatically receives an object from which we can de structure the `isActive `property. This is a boolean which returns true if the link is presently active. We can check this and conditionally apply css classes for active nav bar items. We must do this for all the links in the navbar. The code will look like:
+
+```javaScript
+import { NavLink } from "react-router-dom";
+import classes from "./MainNavigation.module.css";
+function MainNavigation() {
+  return (
+    <header className={classes.header}>
+      <nav>
+        <ul className={classes.list}>
+          <li>
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                isActive ? classes.active : undefined
+              }
+            >
+              Home
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/products"
+              className={({ isActive }) =>
+                isActive ? classes.active : undefined
+              }
+            >
+              Products
+            </NavLink>
+          </li>
+        </ul>
+      </nav>
+    </header>
+  );
+}
+ 
+export default MainNavigation;
+```
+
+We can also use the `style `prop the same way as we have used the `className `prop (passing a function as prop value and de-structuring the `isActive `property from the object) and set inline values.
+
+In some situations we will want to trigger a navigation programmatically for this we can use the `useNavigate `hook provided by the `react-router-dom` package. We can then call that in our functional component to get access to the navigate function. This can be used to trigger a navigation action from inside of your code.
+
+```javaScript
+import { useNavigate } from "react-router-dom";
+......
+ const navigate = useNavigate();
+  function navigateHandler() {
+    navigate("/products");
+  }
+.....
+<button onClick={navigateHandler}>Navigate</button>
+```
+
+The most important feature of react-router-dom is the ability to create dynamic routes. For example if we have a list of products in our products components. When we click on the component it should show the product details. We can create such a product details page. Every time we will load the same product detail page when user clicks on a product item, but the data should be different for different products. We could not possibly hard code every path for every product. This is why react-router-dom supports dynamic path segments (path parameters). We add such a path parameter by specifying a `:` and any name of your choice. This signals react router dom that this part of the route is dynamic. We can have more hard coded segments after the dynamic segment. We can pass any value of our choice for the dynamic segment. The code will look like:
+
+```javaScript
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { path: "/", element: <HomePage /> },
+      { path: "/products", element: <ProductsPage /> },
+      { path: "/products/:productId", element: <ProductDetails /> },
+    ],
+  },
+]);
+```
+
+In the product details page we can access the dynamic path segment's value. We can use the `useParams` hook provided by react-router-dom for this. This hook gives us a params object when we call it. This params object is javascript object which contains every dynamic path segment defined in our route definition as a property. We should use the exact name of the dynamic segment to access the value from the params object. The example code will look like:
+
+```javaScript
+import { useParams } from "react-router-dom";
+function ProductDetails() {
+  const params = useParams();
+  return (
+    <>
+      <h1>ProductDetails</h1>
+      <p>{params.productId}</p>
+    </>
+  );
+}
+ 
+export default ProductDetails;
+```
+
+We can also use template literals for creating dynamic paths like:
+
+```javaScript
+import { Link } from "react-router-dom";
+const PRODUCTS = [
+  { id: "p1", title: "Product 1" },
+  { id: "p2", title: "Product 2" },
+  { id: "p3", title: "Product 3" },
+];
+function ProductsPage() {
+  return (
+    <>
+      <h1>The products Page</h1>
+      <ul>
+        {PRODUCTS.map((product) => (
+          <li key={product.id}>
+            <Link to={`/products/${product.id}`}>{product.title}</Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+ 
+export default ProductsPage;
+```
+
+The paths we defined till now are absolute paths. This is what we sees after domain name. Suppose if we change the name of the `/ `path to `/root` like :
+
+```javaScript
+const router = createBrowserRouter([
+  {
+    path: "/root",
+    element: <RootLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { path: "/", element: <HomePage /> },
+      { path: "/products", element: <ProductsPage /> },
+      { path: "/products/:productId", element: <ProductDetails /> },
+    ],
+  },
+]);
+```
+
+We will get an error like:
+
+`Absolute route path "/" nested under path "/root" is not valid. An absolute child route path must start with the combined path of all its parent routes.`
+
+To fix this we should make the children path relative by removing their leading `/`. This means that the relative paths are appended after the path of the wrapper route. Like:
+
+```javaScript
+const router = createBrowserRouter([
+  {
+    path: "/root",
+    element: <RootLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { path: "", element: <HomePage /> },
+      { path: "products", element: <ProductsPage /> },
+      { path: "products/:productId", element: <ProductDetails /> },
+    ],
+  },
+]);
+```
+
+This same rule will apply for links also.
+
+We can also set the `relative `prop to the Link component. It's value can either be `path `or `route`. The default is
+
+`route`.  
+We can use the `..` in the `to `prop of `Link `tag to go back. This is resolved based on the route definitions. If we are placing this in a sibling routes it will go back one level to the wrapper path. If we set the relative `prop `to `path`, now react router will look at the currently active path and remove one segment from the path.  
+This prop does not work with absolute paths.
+
+If we have a path like:
+
+`path: "", element: <HomePage />`
+
+We can use the `index `property and set it `true`. This will turn the route to an index route which means that it is the default route that will be displayed if the parents path is currently active.
+
+If you you have 2 routes like:
+
+```javaScript
+        { path: "/events/:id", element: <EventDetailPage /> },
+        { path: "/events/new", element: <NewEventPage /> },
+```
+
+You don't need to worry about whether the first route will override the second route or not. The first one has a dynamic path at the end and the second route has a static name. Both has the /events as prefix. The react router is smart enough to distinctly identify them. The /new route is more specific and can easily be identified without problems by react router.
+
+We can also create deeply nested routes like:
+
+```javaScript
+const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <RootLayout />,
+      children: [
+        { index: true, element: <HomePage /> },
+        {
+          path: "events",
+          element: <EventsRootLayout />,
+          children: [
+            { index:true, element: <EventsPage /> },
+            { path: ":id", element: <EventDetailPage /> },
+            { path: "new", element: <NewEventPage /> },
+            { path: ":id/edit", element: <EditEventPage /> },
+          ],
+        },
+      ],
+    },
+  ]);
+```
+
+**NOTE:** Always use end `prop `when using the the `NavLink `component.
+
+When we are using the `useEffect `hook to fetch the data inside of a component, the component is loaded first without the data and when the data is available it is shown on the component. We use loading states in this approach.  
+React router helps to avoid this by first fetching the data and then render the component. If we are using react router version higher than 6 we don't need to write the code for fetching data and handling the different states, instead react router will help you with all that. This can be done by adding an extra property in the route definition. We can add the `loader `property. It requires a function as value (a regular function or an arrow function). This function will be executed when you are about to visit that route for which the loader property is specified (Before the component function of the specified element is executed). Inside this function we can load and fetch your data. Since we are using async await we can mark the function as async.
+
+After fetching the data we can return it from the function. If we do so react router will make sure that it will provide the data to the component to which it is needed. The code will look like:
+
+```javaScript
+ {
+              index: true,
+              element: <EventsPage />,
+              loader: async () => {
+                const response = await fetch("http://localhost:8080/events");
+ 
+                if (!response.ok) {
+                 //...
+                } else {
+                  const resData = await response.json();
+                  return resData.events;
+                }
+              },
+            },
+ 
+```
+
+To get the data from the loader we need to go to the component we need to import `useLoaderData `from `react-router-dom`. This is a special hook which let's you access the closest loader data. We can simply call this hook and accept the value into an object. This will have the data returned from the loader. We might think that the data returned from the async loader function is a promise. But the `useLoader `hook will automatically convert the data and give us the data. The component code will now look like:
+
+```javaScript
+import { useLoaderData } from "react-router-dom";
+import EventsList from "../components/EventsList";
+ 
+function EventsPage() {
+  const events = useLoaderData();
+ 
+  return (
+    <>
+      <EventsList events={events} />
+    </>
+  );
+}
+ 
+export default EventsPage;
+```
+
+As you can see it makes the component function more leaner and easier to read.
+
+We can also use this hook in other components which are children of the component.  
+We can use this hook in a higher level route. If we try to do so we will get undefined as response. This is because we are trying to access the data from a loader which is defined on a lower level. This means that we can use the `useLoaderData `hook in the element that is assigned to a route and all the components that might be used inside that element.
+
+We can argue that defining the loader function in the App.js file will make the file bloated and the loader function is actually belonging to the component and not the App.js. So it is a good practice to place the loader function in the component where we actually need to load the data. We can define the function inside of the component function and export it. In the App.js file we can import it and pass it as the value for the `loader `property of the route. The code will look like:
+
+```javaScript
+export async function loader() {
+  const response = await fetch("http://localhost:8080/events");
+ 
+  if (!response.ok) {
+    //...
+  } else {
+    const resData = await response.json();
+    return resData.events;
+  }
+}
+```
+
+And in the app.js:
+
+```javaScript
+import EventsPage, { loader as eventLoader } from "./pages/EventsPage.js";
+....
+ {
+              index: true,
+              element: <EventsPage />,
+              loader: eventLoader,
+            },
+```
+
+The loader for the page will be executed right when we load that page. The element will load when ever the data is available, if there is a delay in fetching the data that delay will be reflected when navigating to the page. The advantage of this approach is that we can rely that the data will be there when the component is loaded. This let's us avoid the use of loading state. The downside of this approach is that there is a delay which looks to the user like nothing is happening.
+
+React router provides us with an option to show feed back based on what is happening. React router provides a special hook which let's us check the current route transition state. We can use the `useNavigation `hook to determine whether we are in an active transition to load the data or if we have no transition. This hook returns a navigation object. We can access the state property of this object, and by checking it's value we can determine the state. It's values are defined as string by the react router dom. The possible values are `"idle", "loading", "submitting"` . We can check this value to show the loading state to the user.
+
+```javaScript
+import { Outlet, useNavigation } from "react-router-dom";
+...
+const navigation = useNavigation();
+{navigation.state === "loading" && <p>Loading.....</p>}
+```
+
+**NOTE:** The loading indicator won't be added to the page which you are transitioning into, but to some page or component which is already visible on the screen when the transition is started.
+
+We can return any kind of data from loader function. We can also return a response object. We can create a response object by creating an instance of the build in `Response `class. This class is built in in the browser. The loader is still part of the client side code. The Response constructor takes in any data of your choice as first argument. We can configure additional things by passing an object as second argument like status codes. When return such a response from the loader the react router package will automatically extract the data from the response when using the `useLoaderData `hook. So we will get access to the data send from the loader easily.  
+The fetch function which we use to communicate with backend API will return a response object(promise of type Response). Since the react router package automatically extracts the data from the response it is ok to return the response object directly from the loader without any additional configuration. Like:
+
+```javaScript
+export async function loader() {
+  const response = await fetch("http://localhost:8080/events");
+ 
+  if (!response.ok) {
+    //...
+  } else {
+    return response;
+  }
+}
+```
+
+We don't need to parse the data into json. But we still need to extract the required data from this object when we want to use the data. Like:
+
+```javaScript
+  const data = useLoaderData();
+  const events = data.events;
+```
+
+So this way we can reduce the amount of code in the loader function by leveraging the support of react router dom to parse response objects automatically.
+
+We can use any browser specific api inside of our loader function, because the code is still client side code which runs in the browser. But we cannot use react hooks inside of this.
+
+To handle errors in the loader function we can return an object which has the error message and any other additional keys if you want. In our component code we can check if the data has error we can show the error message by returning JSX code. The code will look like:
+
+```javaScript
+import { useLoaderData } from "react-router-dom";
+import EventsList from "../components/EventsList";
+ 
+function EventsPage() {
+  const data = useLoaderData();
+  if (data.isError) {
+    return <p>{data.message}</p>;
+  }
+  const events = data.events;
+  return (
+    <>
+      <EventsList events={events} />
+    </>
+  );
+}
+ 
+export default EventsPage;
+ 
+export async function loader() {
+  const response = await fetch("http://localhost:8080/events");
+ 
+  if (!response.ok) {
+    return { isError: true, message: "Could not fetch events..." };
+  } else {
+    return response;
+  }
+}
+```
+
+This is one possible approach.
+
+Alternatively we can throw an error object by using the built-in `Error `constructor, or by simply throwing an object with the error message. When an error gets thrown inside of a loader something special happens. The react router will render the closest error element. The `errorElement `we have seen earlier is not just for showing an error page if there is invalid route. The error element will be shown whenever an error is generated in any route related code including loader. We can place the `errorElement `property for the root path it will be triggered if there is any error in any of the children. We can also have `errorElement `property in the children routes too. If we define such property, incase of error in the route that error element will be shown.
+
+It is a good practice to handle 404 errors(route/page not found) with errors in the component. For this inside of the loader instead of throwing an error we can return a response with a message. We must stringify the argument when we are passing an object as response. The second argument must be an object which will return the status code. Like:
+
+```javaScript
+throw new Response(JSON.stringify({ message: "Could not fetch events." }), {
+      status: 500,
+    });
+```
+
+We can get a hold of the data which is getting thrown as an error inside of a component that is rendered as the `errorElement`. Inside this component we should import the `useRouteError `hook provided by the `react-router-dom`. Then when we call this hook inside of the component function it will return an error object. The shape of the error object will depend upon the shape of the response that is thrown from the loader. If we set a status code it will have a status code which will reflect the status of the response thrown.
+
+If you threw a regular kind of javascript object then this error object will have that object only. Throwing a status code is a good option because it will let us create a generic error component and display the results in that component dynamically based on the status code.  
+The message of the response will be inside the `data `property of the error object. Note that we must parse the data object to access it. The code will look like:
+
+```javaScript
+import PageContent from "../components/PageContent.js";
+import { useRouteError } from "react-router-dom";
+import MainNavigation  from "../components/MainNavigation.js";
+function ErrorPage() {
+  const error = useRouteError();
+  let title = "An error occured!";
+  let message = "Something wen wrong!";
+ 
+  if (error.status === 500) {
+    message = JSON.parse(error.data).message;
+  }
+  if (error.status === 404) {
+    title = "Not found!";
+    message = "Could not find the respource for the page.";
+  }
+  return (
+    <>
+      <MainNavigation/>
+      <PageContent title={title}>
+        <p>{message}</p>
+      </PageContent>
+    </>
+  );
+}
+ 
+export default ErrorPage;
+```
+
+It might be a little difficult to construct the response object manually and throw it in case of an error. To fix that react router provides a special utility. This helper is available in react router version 6\. For this we need to import the `json()` hook from the `react-router-dom`. Then return the json() from the loader. To the json function we must pass our data that needs to be sent as argument (object). This way we don't need to manually stringify the our data to json before sending it. We can also send extra response metadata as the second argument.  
+We can also avoid parsing the data manually from when accessing the error data inside of the react component.  
+**NOTE:** This is not supported in the latest version of react-router-dom.
+
+We can still get access to route parameters inside of the loader function. The react router dom will automatically pass an object to the loader function when it is executing it. This object contains 2 important pieces of data the `request `property which contains the request data and the `params `property which contains the request params. The request property can be used to access certain things like the url, query parameters etc. We can get access to all the route parameter values using the params property like we used the `useParams`. After defining the loader we must register the loader with the route. The code will look like:
+
+```javaScript
+export async function loader({request, params}){
+  const id = params.id;
+  const response = await fetch("http://localhost:8080/events/"+id);
+  if(!response.ok){
+  throw new Response(JSON.stringify({message: "Could not fetch details of the selected event"}),{
+      status: 500
+    });
+  }else{
+    return response;
+  }
+}
+```
+
+We can use the data returned from the loader inside of the component using the `useLoaderData `hook like we did before.
+
+If two routes use the same data, we don't need to create separate loaders, instead we can create a common parent route and add the routes which share the same data (similar route name). For that parent route we don't need to provide an element property. We can avoid the element property if we don't need a shared layout. In the children we can specify the relative path with respect to the parent route and specify the element. We can then specify the loader for the common parent route, this way the loader can be shared. The code will look like:
+
+```javaScript
+{
+              path: ":id",
+              loader: eventDetailLoader,
+              id: "event-detail",
+              children: [
+                {
+                  index: true,
+                  element: <EventDetailPage />,
+                },
+                {
+                  path: "edit",
+                  element: <EditEventPage />,
+                },
+              ],
+            },
+```
+
+By default the react-router-dom looks for loader in the route definition of that particular element. In the above case we have defined the loader in the parent route. So to make sure that the loader is available for the child route we should add a special property to the parent route called `id`. We can provide any string of our choice as value for this. To access the data we will use the `useRouteLoaderData `hook inside of the component which wants to access the parent loader. This hook works similar to that of `useLoaderData `but it takes a route id as argument. The code will look like:
+
+```javaScript
+import { useRouteLoaderData } from "react-router-dom";
+export default function EditEvent() {
+  const data = useRouteLoaderData("event-detail");
+......
+```
+
+We can use actions of the react-router-dom to send data, like we used loaders to load data.
+
+To add action to a route we add the special action property to the route definition. The action wants a function as value. We typically define the function inside of the component file to keep the code organized. The action function is similar to loader function. It is still client side code so, we can access any client side code here. To access the data from the form we must ensure 2 things:
+
+1. We must replace the `form `element with the `Form `component which is imported from the `react-router-dom`. We should also specify the `method `prop and set it's value based on the method we want to use like GET, POST, PUT, DELETE etc.
+2. We must ensure that all input elements have a `name `attribute with a value specified.
+
+This special Form component will make sure that the request and the data from the form is sent to the action.
+
+To get the data from the form component inside of the action function we can accept an object which will have some helpful properties. We can de-structure those properties to get a hold of the data. The properties are `request `and `params `property. The request object will have the form data. To get a hold of the form data we need to call the `formData()` method on the request object (make sure to await this). We can accept this into an object and from this object we can access individual fields of the form by using the `get()` method with the name of the field as argument. The action function will look like:
+
+```javaScript
+export async function action({request, params}){
+  const data = await request.formData();
+  const eventData = {
+    title: data.get("title"),
+    image: data.get("image"),
+    date: data.get("date"),
+    description: data.get("description"),
+  }
+  const response = await fetch("http://localhost:8080/events", {
+    method: "POST",
+    headers:{
+      'Content-Type': "application/json",
+    }
+    body: JSON.stringify(eventData)
+  });
+  if(!response.ok){
+    throw new Response({message: "Could not save event."}, {status: 500});
+  }
+}
+```
+
+To add this action to the route we can do it like:
+
+```javaScript
+import NewEventPage, {
+  action as newEventAction,
+} from "./pages/NewEventPage.js";
+..........
+..........
+ { path: "new", element: <NewEventPage />, action: newEventAction },
+```
+
+In the above example nothing will happen after the data is sucessfully submitted to the backend, because we haven't specified anything after the request is successful. To redirect the user to a different page upon submission of the data we can use the `redirect `function which can be imported from `react-router-dom`. It creates a response object which redirects the user to a certain page. The updated code will look like:
+
+```javaScript
+import {redirect} from "react-router-dom";
+.......
+export async function action({ request, params }) {
+.......
+  return redirect("/events")
+}
+```
+
+We can send the data from the `Form `component to any other path using the `action `prop and specifying the path to which the data needs to be send (That route's action function will be triggered). If we use the form component to trigger an action it will not ask for any confirmation (if we have any confirmation code).
+
+To overcome this we can trigger an action programatically. We can use the `useSubmit `hook for this provided by the `react-router-dom`. Calling this hook will give you a submit function. To trigger the action we can call this submit function. The submit function requires 2 arguments, the first argument is the data that we want to submit. This data will automatically be wrapped in a form data object when the data is sent. If we don't need to send any data we can use `null`. The second argument is an object which has similar properties which we set to a form. We can specify the request method, the action path if we have a different action path.
+
+We can extract the request method inside of the action function from the `request `param. The example code will look like:
+
+```javaScript
+import { Link, useSubmit } from "react-router-dom";
+function EventItem({ event }) {
+  const submit = useSubmit();
+  function startDeleteHandler() {
+    const proceed = window.confirm("Are you sure?");
+    if (proceed) {
+      submit(null, { method: "delete" });
+    }
+  }
+....
+```
+
+We can provide a feed back on form submission and disable further submission if the form by disabling the submit button of the form.  
+The `useNavigation()` hook provided by `react-router-dom` is different hook when compared to `useNavigate()`. The use navigation object provides access to a navigation object. We can access different properties from this such as the data that was submitted. What we are interested is the state of the current transition when we are submitting a form. We can track weather the action is submitted. We can use the `state `property of the navigation object and check weather it's value is `submitting`. We can use this value to disable the submit button. The example will look like:
+
+```javaScript
+import { Form, useNavigation } from "react-router-dom";
+.......
+  const navigation = useNavigation();
+      <div className={classes.actions}>
+        <button type="button" onClick={cancelHandler} disabled={isSubmitting}>
+          Cancel
+        </button>
+        <button disabled={isSubmitting}>{isSubmitting ? 'Submitting...': "Save"}</button>
+      </div>
+```
+
+You should never rely solely on client side validation because they can be turned off with dev tools. So you should also validate the data on the server side so that incorrect data is not stored.  
+To offer a good user experience the errors should be shown in the form itself without using the generic error page. To show such an error message we can return the response object directly from the action function. We can use this returned response object in our component. We can use the `useActionData `hook provided by the `react-router-dom` for this. Calling this hook will provide the data returned by the action. It will provide the data returned from the closest action. React router dom will automatically parse the response object and provide the data so that it is readily accessible.
+
+```javaScript
+import {
+  Form,
+  useNavigation,
+  useActionData,
+} from "react-router-dom";
+ 
+import classes from "./EventForm.module.css";
+ 
+function EventForm({ method, event }) {
+ ........
+  const data = useActionData();
+....
+ return (
+    <Form method="POST" className={classes.form}>
+      {data && data.errors && (
+        <ul>
+          {Object.values(data.errors).map((err) => (
+            <li key={err}>{err}</li>
+          ))}
+        </ul>
+      )}
+......
+```
+
+The example code will look like above.
+
+We can reuse action functions. If you use the same form multiple times for different purposes (for example we can use the same form for adding data and editing data), we can create a common form component and set the method attribute of the form dynamically. We can get access to this method in our action function to differentiate between the requests. We can extract the request method from the request object. This can be used to set the method attribute of the request which we are sending to the backend. There might also be changes in the url so we need to adjust accordingly to make sure that the action function can be reused. We can also store the action function in a separate file if we want, but to make it more readable and meaningful we can place it with the reusable form component we created.  
+**NOTE:** When checking the method type in the action function we should check with capital letter request method names. Like POST, PATCH etc.
+
+In React Router, using the standard `<Form>` component typically triggers a route transition after an action completes. To avoid this, use the `useFetcher()` hook. It returns a `fetcher` object containing a `Form` component that submits data to an action or loader **without navigating** away from the current page. This allows you to handle background updates in components with multiple actions, whereas the default `<Form>` will redirect the user to the action's route upon submission.
+
+The fetcher object also provides ways to access the data returned by loaders and actions. We can also provide feedback to the user if the action is succesfull using the same fetcher object. The `state `property of the fetcher tells you the status of the operation that is happening behind the scenes. It's values are `idle`, `loading `or `submitting`. This can help you with updating the UI. For that we can use `useEffect` and check the message from the action and provide a feedback to the user. The example code will look like:
+
+```javaScript
+import classes from "./NewsletterSignup.module.css";
+import { useFetcher } from "react-router-dom";
+import { useEffect } from "react";
+function NewsletterSignup() {
+  const fetcher = useFetcher();
+  const { data, state } = fetcher;
+  useEffect(() => {
+    if (state === "idle" && data && data.message) {
+      window.alert(data.message);
+    }
+  }, [data, state]);
+  return (
+    <fetcher.Form
+      method="post"
+      className={classes.newsletter}
+      action="/newsletter"
+    >
+      <input
+        name="email"
+        type="email"
+        placeholder="Sign up for newsletter..."
+        aria-label="Sign up for newsletter"
+      />
+      <button type="submit">Sign up</button>
+    </fetcher.Form>
+  );
+}
+ 
+export default NewsletterSignup;
+```
+
+In some cases we might need to show the page or some parts of the page before the data is there from the loader. When using the loader the page will be displayed only after the data is loaded successfully. In these cases we can defer loading and tell react router that we want to render a component even though we don't have the data for that. For this we need to go to the file where the loader for that route is placed and outsource the logic that fetched the data into a separate function. Then in the loader function we don't need to await the newly created function, instead we can use the `defer `function imported from react router dom.  
+**NOTE:** The defer function is not available in react router version 7 and above.
+
+To the defer function we will pass an object, in this object we will bundle all the http requests that will go from the page. We can set a key name of our choice and call the outsourced method for the http request. Here we need to call the method instead of passing a pointer. The data returned from the function will be placed as a promise inside of this key. There should be a promise so that we can defer, if there is no promise we cannot defer. From the loader function we will return the value returned by the `defer `function. The code will look like:
+
+```javaScript
+import {defer} from "react-router-dom";
+.....
+async function loadEvents(){
+  const response = await fetch("http://localhost:8080/events");
+ 
+  if (!response.ok) {
+    throw new Response(JSON.stringify({ message: "Could not fetch events." }), {
+      status: 500,
+    });
+  } else {
+    const resData = await response.json();
+    return resData.events;
+  }
+}
+export async function loader() {
+  defer({
+    events: loadEvents(),
+  });
+}
+```
+
+We cannot use the data directly from the defer inside of our components. Instead we use another component provided by `react-router-dom` which is called `Await`. The `Await `component has a special `resolve `prop which wants one of our deferred values as value. Between the opening and closing tags of the Await component we must provide a dynamic value which is a function which will be executed once the data is there. This function should return the component which uses the data from the loader.  
+We should finally wrap the `Await `component with the `Suspense `component. The `Suspense `component is imported from `react`. The Suspense component is used in situations where we need to display a fallback while the data needs to arrive. It requires a `fallback `prop which accepts JSX code as value. This code can be used to display the fallback when the data is loading.  
+When using defer we need to manually parse the response and send the data from the helper function which sends data to the defer inside loader.
+
+The code will look like:
+
+```javaScript
+import { defer, useLoaderData, Await } from "react-router-dom";
+import { Suspense } from "react";
+function EventsPage() {
+  const data = useLoaderData();
+ return (
+    <Suspense fallback={<p style={{ textAlign: "center" }}>Loading...</p>}>
+      <Await resolve={data.events}>
+        {(loadedEvents) => <EventsList events={loadedEvents} />}
+      </Await>
+    </Suspense>
+  );
+}
+```
+
+This can be helpful if you have multiple http requests in a page with different speeds.
+
+If you have react router version 7 or higher, instead of using `defer()`, you can directly return an object that contains unresolved promises.
+
+I.e., instead of writing this code:
+
+```javaScript
+export async function loader() {  return defer({    events: loadEvents(),  });}
+```
+
+Use this code with React Router v7:
+
+```javaScript
+export async function loader() {  return {    events: loadEvents(),  };}
+```
+
+Also make sure to remove the `defer` import at the top of the file.
+
+That's all! No further changes are needed, you still use the `<Await>` component as shown before. So:
+
+```javaScript
+export async function loader() {
+  return {
+    events: loadEvents(),
+  };
+}
+```
+
+We can handle multiple http requests from the component using the defer method. For this we can create separate functions for each request and call it inside of the defer (or inside of the returned object) inside of the loader function.  
+Then inside of the JSX code which uses the data from the loader we will need to use as many Await tags as the number of requests. Inside these we can use the dynamic block to add a function which will return the component which needs to access the data. All the `Await `components must be wrapped in independent `Suspense `components, otherwise the `Supsense `component will wait for all the awaits to complete before showing the data. The code will look like:
+
+```javaScript
+export async function loader({ request, params }) {
+  const id = params.id;
+  return {
+    event: loadEvent(id),
+    events: loadEvents(),
+  };
+}
+```
+
+```javaScript
+import { useRouteLoaderData, redirect, Await } from "react-router-dom";
+import { Suspense } from "react";
+export default function EventDetailsPage() {
+  const { event, events } = useRouteLoaderData("event-detail");
+  return (
+    <>
+      <Suspense fallback={<p style={{ textAlign: "center" }}>Loading...</p>}>
+        <Await resolve={event}>
+          {(loadedEvent) => <EventItem event={loadedEvent} />}
+        </Await>
+      </Suspense>
+      <Suspense fallback={<p style={{ textAlign: "center" }}>Loading...</p>}>
+        <Await resolve={events}>
+          {(loadedEvents) => <EventList events={loadedEvents} />}
+        </Await>
+      </Suspense>
+    </>
+  );
+}
+```
+
+There are cases where we need to show some data first. In this case the defer offers fine grain control. In such cases, if we have an async loader we can await inside of the defer (or inside of the object returned) for the data to be arrived before navigating to the component and load other data after we have navigated to the page. The `await `keyword acts as a switch here to control which data should be loaded before the navigation and which data should be loaded after navigating. Example:
+
+```javaScript
+export async function loader({ request, params }) {
+  const id = params.id;
+  return {
+    event: await loadEvent(id),
+    events: loadEvents(),
+  };
+}
+```
+
