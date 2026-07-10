@@ -4008,3 +4008,277 @@ export async function loader({ request, params }) {
 }
 ```
 
+Certain resources or routes of the backend should not be accessible to everyone. So the react application that want's to access certain resources must authenticate before access is granted. To grant the frontend application to access the data from the backend we need to pass the user credentials to confirm the identity of the user (username and password). The backend will then validate those credentials and send a response based on the credentials. If the credentials are matching then access is granted, otherwise it is rejected. The server must not reply with a literal "yes" or "no", the access must be able to be validated by the server later on when the client requests protected resources.  
+To fix the above problem we can use 2 methods:
+
+- Server side sessions
+- Authentication Tokens
+
+Server side sessions are suitable for full stack applications where we don't have a de coupled front-end and backend, but this is not ideal for react applications where we have a de coupled front end and backend. The idea behind server side sessions is that after a user is logged in and authenticated we store a unique identifier on the server and map that to a specific client that will be sent back to the client. The client will send that id with future requests which. This id will be checked to determine weather he has access to restricted resources when it request for them. This requires tight coupling of front end and backend to work.
+
+For react apps to solve the above problem we use authentication tokens. The idea behind authentication tokens is that on the server after a user was authenticated we create a permission token (but we don't store it). This token is a string which is created based on some algorithm, the token will have some encoded information. We will send this token back to the client. The validity of this token can be checked and proven by the the backend which created the token. Because token is created with some private key which is only known to the backend. For future requests we will attach those tokens with the requests and the backend will validate the token and determine whether the token was created by that backend. If the token is valid, permission to those protected resources will be granted.
+
+A query parameter is a parameter that is appended in the URL after a question mark. We can define query parameters in the URL to define how query components are rendered. The advantage of this approach is that we can directly link the page to the desired mode with the query parameter. To access the query parameters in a component we can use the `useSearchParams `hook inside of the component which is imported from `react-router-dom`. This hook returns an array, so we can use array de-structuring to get access to the elements in that array. There are 2 elements in that array, the first element is an object will give us access to the currently set query params. The second element of that array is a method which lets us update the currently set query params. We can use the `get `method on the query parameter object and pass the key for which we want to extract the value from query param. This approach is an alternative to using state. Example code will look like:
+
+```javaScript
+import { Form, Link, useSearchParams } from "react-router-dom";
+ 
+import classes from "./AuthForm.module.css";
+ 
+function AuthForm() {
+  const [searchParams] = useSearchParams();
+  const isLogin = searchParams.get("mode") === "login";
+  return (
+    <>
+      <Form method="post" className={classes.form}>
+        <h1>{isLogin ? "Log in" : "Create a new user"}</h1>
+        <p>
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" name="email" required />
+        </p>
+        <p>
+          <label htmlFor="image">Password</label>
+          <input id="password" type="password" name="password" required />
+        </p>
+        <div className={classes.actions}>
+          <Link to={`?mode=${isLogin ? "signup" : "login"}`}>
+            {isLogin ? "Create new user" : "Login"}
+          </Link>
+          <button>Save</button>
+        </div>
+      </Form>
+    </>
+  );
+}
+ 
+export default AuthForm;
+```
+
+We can directly provide the link to the login mode in the above example like:
+
+```javaScript
+  <NavLink
+              to="/auth?mode=login"
+              className={({ isActive }) =>
+                isActive ? classes.active : undefined
+              }
+            >
+              Authentication
+            </NavLink>
+```
+
+We can extract the query parameters from inside of the action function. For this we can use the built in URL constructor and passing the `request.url` to construct a new url. We can then access the search params on this object by using the `searchParams `property. Example:
+
+```javaScript
+export async function action({ request }) {
+  const searchParams = new URL(request.url).searchParams;
+  const mode = searchParams.get("mode") || "login";
+  const data = await request.formData();
+  const authData = {
+    email: data.get("email"),
+    password: data.get("password"),
+  };
+  if (mode !== "login" && mode !== "signup") {
+    throw new Response(JSON.stringify({ message: "Unsupported mode." }), {
+      status: 422,
+    });
+  }
+  const response = await fetch("http://localhost:8080/" + mode, {
+    method: "POST",
+    header: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(authData),
+  });
+  if (response.status === 422 || response.status === 401) {
+    return response;
+  }
+  if (!response.ok) {
+    throw new Response(
+      JSON.stringify({ message: "Could not authenticate user." }),
+      { status: 500 },
+    );
+  }
+  return redirect("/");
+}
+```
+
+We must make sure that we had mapped the action to appropriate route.
+
+We can access the error messages returned by the action inside of a component by `useActionData `hook provided by `react-router-dom` like we have seen earlier.
+
+The example code will look like:
+
+```javaScript
+import classes from "./AuthForm.module.css";
+function AuthForm() {
+  const [searchParams] = useSearchParams();
+  const data = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+ 
+  const isLogin = searchParams.get("mode") === "login";
+  return (
+    <>
+      <Form method="post" className={classes.form}>
+        <h1>{isLogin ? "Log in" : "Create a new user"}</h1>
+        {data && data.errors && (
+          <ul>
+            {Object.values(data.errors).map((err) => (
+              <li key={err}>{err}</li>
+            ))}
+          </ul>
+        )}
+        {data && data.message && <p>{data.message}</p>}
+        <p>
+          ........
+          <button disabled={isSubmitting}>
+            {isSubmitting ? "Saving...." : "Save"}
+          </button>
+        </div>
+      </Form>
+    </>
+  );
+}
+```
+
+We need to store the token coming from the backend after we successfully logged in. Then we need to send the token with every request so that the backend can verify the identity of the user. We can store it in memory or inside of a cookie. An easier option is to set it inside of local storage or session storage. We can access the local storage and attach it with the outgoing requests whenever we need it. We should take care in extracting the token received as response from the backend.  
+We need to send the token inside of the request header under the `'Authorization'` key. The value of this key should be `Bearer` followed by a white space and the token. This is the typical method used for authentication. The code looks like:
+
+```javaScript
+ const token = getAuthToken();
+  const response = await fetch('http://localhost:8080/events/' + eventId, {
+    method: request.method,
+    headers:{
+      'Authorization' :'Bearer '+ token,
+    }
+  });
+```
+
+We can check the token by going to the browsers dev tools > Application > storage. We can delete the token from here if we want.
+
+We will need to add this token with every request which are protected by backend (requires authentication) from the backend to perform the suitable action.
+
+To perform the logout operation we can create a new action inside of a new file and remove the token stored in the local storage. After this we can `redirect `to the homepage using the redirect hook provided by `react-router-dom` . We can then register this action in the home page, by adding a new route. This route will not have any element, it will only have a `path `and `action`. The code will look like:
+
+```javaScript
+import { redirect } from "react-router-dom";
+ 
+export function action() {
+  localStorage.removeItem("token");
+  return redirect("/");
+}
+```
+
+The route will look like:
+
+```javaScript
+import { action as logoutAction } from "./pages/Logout.js";
+.....
+.....
+{
+        path: "logout",
+        action: logoutAction,
+      },
+```
+
+**NOTE:** You should make sure that you do add an extra `return null` statement in all if statement branches where nothing would be returned otherwise to avoid errors.
+
+We can make the token available to all components so that all components can track this and update the UI accordingly. We can use react context which is perfectly fine for handling the auth token through out the application. Since we are using react router we can use add a loader to our root path which extracts the token from the local storage. This token will then be available through out the application. The best thing about this is that once we logout, it will re fetch the token from local storage and if it does not exist, it will update all the pages that uses the loader data. To use this loader inside of other routes, we should add an id to the route which have the token loader. We can then use the `useRouteLoaderData()` hook of `react-router-dom` which will take in the id we defined for the route. This will give us the token. We can check this and perform various actions in our component.
+
+We can protect certain routes which send the data to the backend and require authentication tokens. Normally even if we don't have a valid token certain components in our front end such as forms behaves normally allows us to submit data. But when we send the data to the backend without token to the backend it will cause an error and it will be displayed to the user. To avoid this we can block certain routes if the user is not logged in at all. We can use a loader for this. We can create a loader and check if the token exists. If the token does not exist we can redirect away from the page.
+
+Normally the tokens have expiry time, so we should clear the token when the token is expired. We can place a `useEffect `hook in the root route of the application and set a timeout function which will get triggered after one hour. This approach won't work if we have multiple root layouts. Inside the timeout function we can programmatically call the logout route using the `useSubmit `hook. The code will look like:
+
+```javaScript
+import {
+  Outlet,
+  useNavigation,
+  useLoaderData,
+  useSubmit,
+} from "react-router-dom";
+import MainNavigation from "../components/MainNavigation";
+import {useEffect} from "react";
+function RootLayout() {
+  // const navigation = useNavigation();
+  const token = useLoaderData();
+  const submit = useSubmit();
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+    setTimeout(
+      () => {
+        submit(null, { action: "/logout", method: "post" });
+      },
+      60 * 60 * 1000,
+    );
+  }, [token, submit]);
+  return (
+    <>
+      <MainNavigation />
+      <main>
+        {/* {navigation.state === 'loading' && <p>Loading...</p>} */}
+        <Outlet />
+      </main>
+    </>
+  );
+}
+ 
+export default RootLayout;
+```
+
+The above solution also has a flaw. The problem is that if we login initially and later if we reload the page (with in 1 hour) the timer is reset again but the token expiry remains un changed in the backend. The backend won't accept this token once it is expired.  
+To solve this we can store the expiration of the token along with the token when it is created and stored first inside the browser. We can create a date object and convert it into ISOString and store it as a new value in our local storage. The code will look like:
+
+```javaScript
+  const expiration = new Date();
+  expiration.setHours(expiration.getHours() + 1);
+  localStorage.setItem("expiration", expiration.toISOString());
+```
+
+We can create a new function to check if the token has expired and check if it expired or not while fetching the token. The code will look like:
+
+```javaScript
+export function getTokenDuration() {
+  const storedExpirationDate = localStorage.getItem("expiration");
+  const expirationDate = new Date(storedExpirationDate);
+  const now = new Date();
+  const duration = expirationDate.getTime() - now.getTime();
+  return duration;
+}
+export function getAuthToken() {
+  const token = localStorage.getItem("token");
+  const tokenDuration = getTokenDuration();
+  if(!token){
+    return null;
+  }
+  if (tokenDuration < 0) {
+    return "EXPIRED";
+  }
+  return token;
+}
+```
+
+And in the root layout we can trigger the submit if the token is expired.
+
+```javaScript
+ useEffect(() => {
+    if (!token) {
+      return;
+    }
+    if (token === "EXPIRED") {
+      submit(null, { action: "/logout", method: "post" });
+      return;
+    }
+    const tokenDuration = getTokenDuration();
+
+    setTimeout(
+      () => {
+        submit(null, { action: "/logout", method: "post" });
+      },
+      tokenDuration,
+    );
+  }, [token, submit]);
+```
+
