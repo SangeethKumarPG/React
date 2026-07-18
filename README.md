@@ -4282,3 +4282,71 @@ And in the root layout we can trigger the submit if the token is expired.
   }, [token, submit]);
 ```
 
+Before deploying the react application we should follow a couple of steps:
+
+**1\. Test Code**: We should test code manually and through automated tests.
+
+**2\. Optimize Code:** We should optimize the code for the deployment. For this we might want to look into a concept called lazy loading.
+
+**3\. Build the app for production:** We will execute a script which is already part of react project. This script will output a production ready bundle of code which is optimized to be as small as possible. We can then move this bundle to the server. Shipping less code is faster because the user will only be able to interact with the application once it is completely loaded.
+
+**4\. Upload the application to server:** We can deploy this output bundle in any server provided by various hosting providers.
+
+Lazy loading is the concept of loading certain parts of code only when it is needed. To understand this concept we should first know about how the code will get built when we don't use lazy loading. In react application we use import statements to use features that are written in other files. So for the code which use these imported code, the imported code needs to be loaded first before showing the content on screen. This means that all code files must be loaded before anything is shown on screen. For smaller applications this is not a problem, but for bigger apps that can be a problem. This can cause the application to slow down when it is initially loaded. This is where lazy loading comes into play, in this we load certain components in the end. We load the components only when they are needed, not ahead of time.
+
+To implement lazy loading in a page first step is to remove the import statement for the component which we want to load lazily. Then we need to re-add it in a way that it is loaded only when it is needed. When we are importing loaders, we can use an anonymous function in place of that loader and inside this function we can call the `import()` method. This method allows us to import items dynamically. To import function we pass a path of the file which we want to import. This function returns a promise. We can either use await or call the `then()` method on this. To the then method we will automatically get the loaded module as argument, we can access the loader function from this module object using the dot operator. The code sample will look like:
+
+```javaScript
+     {
+            index: true,
+            element: <BlogPage />,
+            loader: () =>
+              import("./pages/Blog.js").then((module) => module.loader()),
+          },
+```
+
+The loader will be executed when we try to navigate to the path.
+
+When it needs to be executed the code for the loader will be fetched dynamically. To lazy load components we can follow the same approach. We can create a constant which is assigned to an anonymous function which will use the same import function that return the component as a promise. We need to wrap this entire anonymous function with `lazy()` function which is imported from `react`.
+
+```javaScript
+import { lazy, Suspense } from "react";
+const BlogPage = lazy(() => import("./pages/Blog.js"));
+```
+
+Since this component will take some time to load, we should wrap it with the `Suspense `component.
+
+```javaScript
+  {
+            index: true,
+            element: (
+              <Suspense>
+                <BlogPage />
+              </Suspense>
+            ),
+            loader: () =>
+              import("./pages/Blog.js").then((module) => module.loader()),
+          },
+```
+
+If we have arguments to the loader function when implementing lazy loading we can accept the meta object as argument to the anonymous function and forward that to the loader. like:
+
+```javaScript
+ {
+            path: ":id",
+             element: (
+              <Suspense fallback={<p>Loading...</p>}>
+                <PostPage />
+              </Suspense>
+            ),
+            loader: (meta) =>
+              import("./pages/Post.js").then((module) => module.loader(meta)),
+          },
+```
+
+The JSX code you write inside your components are not supported by react so we need to build the application which converts the code into native html, css and javascript. The start script translates the code in real-time so that we can see the changes in the browser instantly. This is not an optimized version. To build the react application we use `npm run build` command. This will produce a highly optimized code bundle which can be uploaded to the server. This will create a build folder. The content of this build folder is what we need. Inside of the static folder we have the optimized javascript files. These javascript files will have all the code you wrote and code from all javascript libraries that you use in your code.
+
+A react single page application is a static website, it only consists of html, css and javascript files. We need a static site hosting provider to host our react applications. Sites like netlify, render, firebase hosting etc. Fire hosting is free and you can host static sites with this. We need to create a firebase project in firebase. To create a hosting inside our project we can go to build>hosting. This will give you a setup process which you can follow.
+
+In a deployed application using **server-side routing**, when a user visits a route, the browser sends a request to the server, which checks if a corresponding file exists and returns it. In contrast, packages like `react-router-dom` offer **client-side routing**, where the browser does **not** send a request to the server for every route change. Instead, the JavaScript code running inside the browser intercepts the navigation, updates the URL, and renders the appropriate component without reloading the page. When deploying the applications with firebase we should reply to the prompt which asks if we have single page application with Yes.
+
