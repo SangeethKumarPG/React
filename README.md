@@ -4350,3 +4350,354 @@ A react single page application is a static website, it only consists of html, c
 
 In a deployed application using **server-side routing**, when a user visits a route, the browser sends a request to the server, which checks if a corresponding file exists and returns it. In contrast, packages like `react-router-dom` offer **client-side routing**, where the browser does **not** send a request to the server for every route change. Instead, the JavaScript code running inside the browser intercepts the navigation, updates the URL, and renders the appropriate component without reloading the page. When deploying the applications with firebase we should reply to the prompt which asks if we have single page application with Yes.
 
+Tanstack query is a library that helps you with sending http requests and keeping your front end user interface in sync with your backend data. We don't necessarily need tan stack query for this we can do the same with `useEffect `and the built in fetch function of javascript. But tanstack query can simplify your code and makes the development process much simpler. It also have more complex features which can be applied to more complex react applications.  
+The problem with the traditional react approach is that it requires quite a lot of code. Also if we navigate away from from our active browser tab which runs the application and later when we comeback it will not trigger a re-fetch automatically. Another limitation is that in the traditional react hook approach there is no caching. When we navigate away from a page and come back to the same page again all the data fetching is performed again. We can also perform data fetching behind the scenes.
+
+We can fix the above problems with tanstack query.
+
+To use tan stack query in react we must install it using `npm install @tanstack/react-query` . It will install the latest version.  
+We can use tanstack query in components which sends http requests. To use this we must import `useQuery `hook from the `@tanstack/react-query` library. This hook will send us an http request behind the scenes and send us the data that we need. It also gives us information about loading state and errors. To use the hook we must configure it first. For that we should pass an object as argument to this hook. We can set various properties, to pass a function we pass the `queryFn `property and set it's value as a function which we want to call. This function sends the actual http request. The `queryFn `needs a function that returns a promise.  
+**NOTE:** Tan stack does not have built in logic which sends http requests. Instead it helps with managing the data associated with those requests. The code to send the request is written by the user.
+
+We should also add the `queryKey `property with the `useQuery `hook. Every fetch request you are sending should have a query key when using this hook. This key will then internally be used tanstack query to cache the data that is yielded by the request. This makes it possible for the response of the request to be reused in the future if we are trying to send the same request again. We can also set for how long the data is stored and reused by tanstack query. This way data can be shown to the user quickly without the need for re fetching. The value of this `queryKey `property is an array of values which are then stored by tanstack query such that when are using a similar array of values tanstack query sees that and it will be able to reuse the existing data. We can provide a string value as element of the array and provide a name of your choice.
+
+We are not limited to strings, we can also use objects or nested arrays.  
+We will get back an object from useQuery. We can use object de structuring to pull out contents which are important to us such as `data`. This will have the actual response data. This object will also have `isPending `property which helps to determine the response is received. We can also de structure `isError `from this object which let's us know if there are any errors. We need to throw an error in the function which makes the http request when an error response is received from the backend. We will also get an error property which will contain the details about the error. We can also extract additional properties on this error property if we are sending them with the error.  
+If we do the above mentioned steps such as configuring the function and using the `useQuery `hook, extracting the necessary data and use them in our components we will still get an error.
+
+It will show that No `QueryClient `set use `QueryClientProvider `to set one. Because in order to use tanstack react query and useQuery hook we need to wrap our component where we want to use the features with a special provider component provided by tanstack query. We can do this in the App component so that all our components can use the react query. We must import the `QueryClientProvider`, `QueryClient `from `@tanstack/react-query`.  
+We must then create a new object of `QueryClient`. We must then wrap our app component with the `QueryClientProvider `component and pass the client prop as the `queryClient `object which we created in the above step.  
+The example component code will look like:
+
+```javaScript
+import { useQuery } from "@tanstack/react-query";
+ 
+import LoadingIndicator from "../UI/LoadingIndicator.jsx";
+import ErrorBlock from "../UI/ErrorBlock.jsx";
+import EventItem from "./EventItem.jsx";
+import { fetchEvents } from "../../util/http.js";
+ 
+export default function NewEventsSection() {
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["events"],
+    queryFn: fetchEvents,
+  });
+ 
+  let content;
+ 
+  if (isPending) {
+    content = <LoadingIndicator />;
+  }
+ 
+  if (isError) {
+    content = (
+      <ErrorBlock
+        title="An error occurred"
+        message={error.info?.message || "Failed to fetch events."}
+      />
+    );
+  }
+ 
+  if (data) {
+    content = (
+      <ul className="events-list">
+        {data.map((event) => (
+          <li key={event.id}>
+            <EventItem event={event} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <section className="content-section" id="new-events-section">
+......
+    </section>
+  );
+}
+```
+
+In the app component:
+
+```javaScript
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+const queryClient = new QueryClient();
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
+}
+```
+
+The advantage of this approach is that if there is some change in the backend if the user visits the website the updated data is fetched instantly without needing to reload the page. This happens automatically.
+
+One of the important feature of tanstack react query is caching. That is when we navigate through our application from one page to another page and when we return back to the first page the data is available immediately without the need for fetching the data again. What happens behind the scenes is that react query is showing the cached data (stale data) immediately and at the same time it will send the request to the associated backend and fetch data, then it will compare it with the query key and updates the UI if the data is changed. It will replace the data silently.  
+We can control this behavior by setting the `staleTime `property in the `useQuery `hook's configuration object. This controls after how much the react query sends a request behind the scenes to get the updated data if there is data in the cache. The default is 0, which means that it will use data from the cache, but also it will send a new request. We can set this value in milliseconds.
+
+The request will only be sent if the component is refreshed.  
+Another value we can set is `gcTime `or garbage collection time. This controls how long the data in the cache will be kept. The default is 5 minutes. We can set values for this also in milli seconds. After this time the data will be discarded and the tanstack react query will need to fetch the data again.
+
+```javaScript
+ const { data, isPending, isError, error } = useQuery({
+    queryKey: ["events"],
+    queryFn: fetchEvents,
+    staleTime: 5000,
+    gcTime: 30000,
+  });
+```
+
+We can pass arguments to the query function by wrapping it in an anonymous function and pass the value. We must ensure that the query keys are specific so that they don't over lap and cause undesired caching behavior. We can construct a query key dynamically so that react query can cache different data for different keys based on the same query.
+
+The `queryFn `parameter of the useQuery's configuration object passes some default data to the function when assigned. This data is an object that has properties like `queryKey`, `signal` . The signal key is used to abort the request if the user navigates away from the component before the request is finished. We can de-structure this signal property inside the function which sends the http request using the fetch function and to the fetch function we can pass a configuration object as the second argument. In this object we pass the `signal `property and set it's value to the de-structured object. This can help the request to be stopped when the user navigates away.  
+When passing data to this function we should make sure that we are passing data as an object so that we can de-structure that. In such cases we should de-structure the signal object in the anonymous function and forward them to the actual function which makes the request. The code will look like:
+
+```javaScript
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["events", { search: searchTerm }],
+    queryFn: ({signal}) => fetchEvents({ signal,searchTerm }),
+  });
+```
+
+In the fetchEvents function:
+
+```javaScript
+export async function fetchEvents({ signal, searchTerm }) {
+  let url = "http://localhost:3000/events";
+  if (searchTerm) {
+    url += "?search=" + searchTerm;
+  }
+  const response = await fetch(url, { signal: signal });
+.....
+}
+```
+
+The above approach offers the highest flexibility because we can either pass data to this function and use it or we can simply pass a pointer which will also execute the function without issues.
+
+If you don't de-structure the signal attribute from the object it will cause issues when you are reusing the function which requires arguments to construct the url in some cases and for cases which don't need any arguments.
+
+We can enable or disable a query using the `enabled `property in the configuration object of `useQuery `hook. When this is set to false the query will not be send. We can also pass operations that returns boolean value to dynamically enable or disable the query. This type of behavior may be needed in cases where we don't need to send a query immediately, but we need to after certain conditions are satisfied.  
+When we are using the `enabled` property we can use the `isLoading `state instead of the `isPending `state because if the query is disabled initially it will show the loading spinner if we use the isPending. The value of `isLoading `will not be true if the query is disabled.
+
+We can also use tanstack react query to send data to the backend. We use the `useQuery `hook only to get data. To send data we use the `useMutation `hook. Though we can technically send the data using the `useQuery `hook we don't use it because the `useMutation `hook is optimized for sending requests. The requests that is send through `useMutations `are not sent instantly when the component render. They are only sent when you want to send.  
+The `useMutation `hook also takes in a configuration object. We can set a `mutationFn `to this object. The `mutationKey `attribute can also be set but it is not required because we don't need to cache the response of the request which changes the data in the backend.  
+When using the `useMutation `hook and we have to send some data from the component to the `mutationFn `we don't need to wrap it inside an anonymous function.  
+The `useMutation `hook returns an object, we can destructure this object to get access to some useful properties.
+
+We can de-structure the `data `property to get access to the response data. The `mutate `property is an important property which is a function we can call anywhere in the component to send the request. When calling this mutate function we can pass the data which we want to send to the backend as argument.  
+We can use the `isPending `property returned from the `useMutation `hook to determine weather the request is completed or not. The `isError `property is used to determine if there is any error. The `error `property will contain details about the error. The example code will look like:
+
+```javaScript
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { createNewEvent } from "../../util/http.js";
+import ErrorBlock from "../UI/ErrorBlock.jsx";
+export default function NewEvent() {
+  const navigate = useNavigate();
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationFn: createNewEvent,
+  });
+  function handleSubmit(formData) {
+    mutate({ event: formData });
+  }
+ 
+  return (
+    <Modal onClose={() => navigate("../")}>
+      <EventForm onSubmit={handleSubmit}>
+        {isPending && "Submitting..."}
+        {!isPending && (
+          <>
+           ...
+          </>
+        )}
+      </EventForm>
+      {isError && (
+        <ErrorBlock
+          title="Failed to create event"
+          message={
+            error.info?.message ||
+            "Failed to create event. Please check your input and try again later."
+          }
+        />
+      )}
+    </Modal>
+  );
+}
+```
+
+We can use the `onSuccess `property to handle things once the mutation is successful. It needs a function as value. This function will be executed once mutation is succeeded(only when mutation is succeeded).  
+We can manually navigate away from the screen after calling the mutation but it will not ensure that mutation is completed. Even if there are errors in the mutation it will also navigate away.  
+We should write the code to navigate away from the screen in the `onSuccess `function.  
+After a new data is submitted we might need to re fetch the data from the backend and show it on the screen. Without additional configuration the submitted data will not be visible on the screen immediately, because react query fetched data periodically. To trigger a re-fetch we will need to mark the existing data in the react query as stale explicitly. We use the `queryClient `object which we have placed in the App.jsx for this.
+
+We can initialize this `queryClient `object in a common js file and use it in any component we want by importing it.  
+On this shared queryClient object we will call the `invalidateQueries()` method. This method tells react query to mark some data as stale and trigger an immediate re-fetch for this data if the data is currently used in a component that is presently visible on the screen. To target specific queries invalidate queries takes in an object as argument. This object should have a `queryKey `attribute that defines the queryKey which needs to be targeted. It is an array where query keys are passed as strings separated by ,. All queries which have this key will be invalidated. It does not need to be an exact match.  
+To work around this we can pass the `exact `attribute to true in the configuration object of the `invalidateQueries `method.
+
+The code will look like:
+
+```javaScript
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationFn: createNewEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      navigate("/events");
+    },
+  });
+```
+
+To avoid the automatic re fetching of all queries associated with a queryKey we can specify the `refetchType `property to `'none'` in the configuration object of `invalidateQueries` method. This will avoid immediate triggering of re fetching if a query is invalidated. The next time they are required they will fetch the data again. The code will look like:
+
+```javaScript
+queryClient.invalidateQueries({
+        queryKey: ["events"],
+        refetchType: "none",
+      });
+```
+
+This can be useful in many cases. For example we have details of an event in the event details page. In this page we also have the option to delete the event. The event details are fetched and stored using the react query. If we delete the event we should invalidate the events query key so that the event list is fetched again. But since we are already in the event details page it will try to fetch the event details of the event that was deleted just before. This will cause the request to fail. To avoid this we can use the above approach.
+
+There is also an alternative way to register updates in the UI without `invalidateQueries()` method. This is called optimistic updating.
+
+Optimistic updates allows us to update the UI without waiting for the backend response. If the update fails in the backend we will need to rollback to the previous state and the UI is updated accordingly. This approach is easy to implement with react query. This can be done by specifying `onMutate` property in the configuration object of `useMutation` hook. It needs a function as value. This function will be executed when you call the mutate function. Inside the function we will update the function that is cached by react query. We will still need the shared `queryClient` object to implement this. We can set the data in the react query using the `setQueryDate` method on the `queryClient` object. This method needs 2 arguments, the first one is the query key for which you want to perform an edit. The 2nd argument is the new data which you want to store under that query key.
+
+React query automatically pass any data to the `onMutate `function which you pass to the `mutate `function.  
+When performing an optimistic update we should cancel all queries for that particular queryKey, we can do this by calling the `cancelQueries` on the `queryClient` object. This function also needs a queryKey. The `cancelQueries` returns a promise which you should await.  
+**NOTE**: `cancelQueries` function only cancels the queries not the mutation.
+
+You should also ensure that the query keys are used consistently otherwise the optimistic updates will not work.  
+The code will look like:
+
+```javaScript
+ const { mutate } = useMutation({
+    mutationFn: updateEvent,
+    onMutate: async (data) => {
+      const newEvent = data.event;
+      await queryClient.cancelQueries({ queryKey: ["events", { id: params.id }] });
+      queryClient.setQueryData(["events", { id: params.id }], newEvent);
+    },
+  });
+```
+
+We should also consider the scenario where the backend responds with an error if the optmistic update fails.
+
+To ensure this we should also get the old data and store the old data. For this we can use the `getQueryData` method on the `queryClient` object. It needs the key of the query which you want to get.  
+We can use the `onError` property in the configuration object of `useMutation` hook. This requires a function as value. This function will be executed when the mutation fails. This automatically gets a couple of inputs automatically send by the react query. It receives the `error` object, the `data` and the `context` object. The `context` object will have the data that you returned from the `onMutate` function. Inside this function we can set the queryData by calling the `setQueryData` as before but this time we will set the data to the previous data accessed from the context object. The code will look like:
+
+You should also set the `onSettled` property on the `useMutation` hook's configuration object. It requires a function as value. This function will be called after the end of the mutation even if the mutation succeeded or failed. Inside the function we can invalidate our queries so that we have the same data on the backend and frontend for the query key. The code will now look like:
+
+```javaScript
+  const { mutate } = useMutation({
+    mutationFn: updateEvent,
+    onMutate: async (data) => {
+      const newEvent = data.event;
+      await queryClient.cancelQueries({
+        queryKey: ["events", { id: params.id }],
+      });
+      const previousEvent = queryClient.getQueryData([
+        "events",
+        { id: params.id },
+      ]);
+      queryClient.setQueryData(["events", { id: params.id }], newEvent);
+      return { previousEvent };
+    },
+    onError: (error, data, context) => {
+      queryClient.setQueryData(
+        ["events", { id: params.id }],
+        context.previousEvent,
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(["events", { id: params.id }]);
+    },
+  });
+```
+
+We will automatically get the `queryKey` corresponding to the query function in the query function as argument automatically provided by react query. If we set some values in the query key we can access it inside of the query function. Example:
+
+```javaScript
+const { data, isPending, isError, error } = useQuery({
+    queryKey: ["events", {max:3}],
+    queryFn: ({signal, queryKey})=>fetchEvents({signal, ...queryKey[1]}),
+  });
+```
+
+This approach can be useful if we are trying to avoid the repetition of code.
+
+React router and react query works well together. We can load the data using `loader` function of react router instead of `useQuery` hook. We can do this with the help of shared `queryClient` object. The `queryClient` object has `fetchQuery` method. This can be used to trigger a query programmatically. The `fetchQuery` function also accepts a configuration object which works the same way as `useQuery`. As we have seen we can access to query parameters in the loader function using the params objects automatically provided by react router dom.  
+But still we will need to use the useQuery hook inside of the component function even if we fetch data with the loader function. Because when the component is loaded it will make the http request and fetch the data and store the response in cache set by react react query. When we need the data the `useQuery` will fetch this data from the cache. In most cases this avoids the need for a loading indicator. The loader function will look like:
+
+```javaScript
+export function loader({ params }) {
+  return queryClient.fetchQuery({
+    queryKey: ["events", { id: params.id }],
+    queryFn: ({ signal }) => fetchEvent({ signal, id: params.id }),
+  });
+}
+```
+
+The useQuery hook will now look like:
+
+```javaScript
+ const { data, isError, error } = useQuery({
+    queryKey: ["events", { id: params.id }],
+    queryFn: ({ signal }) => fetchEvent({ signal, id: params.id }),
+  });
+```
+
+We should also assign the loader to the route in our App.js file like:
+
+```javaScript
+{
+    path: "/events/:id",
+    element: <EventDetails />,
+    children: [
+      {
+        path: "/events/:id/edit",
+        element: <EditEvent />,
+        loader: editEventLoader,
+      },
+    ],
+  },
+```
+
+The approach you choose is upto you.
+
+We can also use react router for performing mutations (editing data). As we have seen earlier we can use action functions to submit the data from a form. The action function automatically receives the request object and params object. We can then extract the data submitted through form and call the function directly without the `useMutation` hook to make the http request. After this we still need to invalidate the queries so that updated data is fetched again.  
+**NOTE**: This approach takes away the optimistic update capability of react query. This approach will have all the advantages and disadvantages of react router.  
+The action function will look like:
+
+```javaScript
+export async function action({ request, params }) {
+  const formData = await request.formData();
+  const updatedEventData = Object.fromEntries(formData);
+  await updateEvent({ id: params.id, event: updatedEventData });
+  await queryClient.invalidateQueries(["events"]);
+  return redirect("../");
+}
+```
+
+Now we can avoid the use of `useMutate` hook.
+
+We can use the `useSubmit` hook of react router to trigger the form submission programatically. So now the form submission handling function will look like:
+
+```javaScript
+  function handleSubmit(formData) {
+    submit(formData, {method: "PUT"});
+  }
+```
+
+And finally we need to register the action to the route in App.jsx.  
+We can use the `useNavigation` hook of react router to provide feedback to the user when the data is submitting to the backend.  
+In some cases the it might take a while for the component to get load when it needs data from the backend. In such cases we can use the `useIsFetching` hook to check weather the react query is currently fetching any data currently in the application. Calling this hook will return a value which indicates weather react query is fetching or not. The code will look like:
+
+```javaScript
+import { useIsFetching } from "@tanstack/react-query";
+......
+ const fetching = useIsFetching();
+<div id="main-header-loading">{fetching > 0 && <progress />}</div>
+```
+
+To avoid un necessary fetching we can use `staleTime` parameter in `useQuery` hook.
+
