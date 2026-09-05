@@ -4701,3 +4701,600 @@ import { useIsFetching } from "@tanstack/react-query";
 
 To avoid un necessary fetching we can use `staleTime` parameter in `useQuery` hook.
 
+Next.js is a react framework which allows you to build full stack applications with react.
+
+To create a nextjs project we can use the command `npx create-next-app@latest projet_name` . This will create a new folder with the specified filename and install next js in that project. This will ask you a couple of questions like weather you want to enable typescript, eslint, tailwind css, app router. You must enable app router.  
+After the project is created you must go to the project root folder and use `npm install` command to install the necessary dependencies.  
+To start the development server we use the same `npm run dev` command.
+
+The **app** folder is the most important folder in the next js application. In this folder we setup our different pages that we want in our website. Inside this you will also find **page.js**. page.js is a reserved file name just like **layout.js**. The **page.js** tells next js that it should render a page. Inside this file we can see a react component function. The special thing about this component is that it is a server component. A server component is component that is not easily built by just react but it is embraced and supported by nextjs. On the surface it looks like a regular component, but nextjs ensures that this component is rendered on the server. The code that is executed inside of the component function is not visible to the client. The JSX code is sent over the wire to the browser to be rendered as html.
+
+To create a new page, we can create new folders which nextjs will treat as new routes. For example if we want to add an about route we can add an about folder inside of app. But on it's this folder won't do anything. We should add a page.js file to let nextjs know that there is a page otherwise it will show a 404 error if we navigate to the route.
+
+We can use normal anchor tags to navigate between pages, but the problem with that approach is that the it will not work as a single page application, the browser will make a request to the backend and it will load the new page. Next js offers both client side and server side rendering. When we initially visit the application the content is rendered on the server and displayed to the user. But inside the page if we try to navigate to another page by clicking on the links it will perform client side rendering. Technically the page is rendered in the server initially but when the user visits the application it is updated with the help of client side javascript code.  
+So you get the best of both of both worlds, i.e, a highly interactive reactive client side application once it is active and finished page being served if we are visiting for the first time.  
+With the anchor tag we are not getting this benefit because the page is always reloaded.
+
+To get this feature we should use the `Link` component provided by nextjs. This is a component provided by nextjs framework which you should use instead of anchor element if we have some internal link inside of the application. It still takes the `href` prop for the path. We can also add additional props just like any other react component. The code will look like:
+
+```javaScript
+import Link from "next/link";
+export default function Home() {
+  return (
+    <main>
+      ....
+      <p>
+        <Link href="/about">About Us</Link>
+      </p>
+    </main>
+  );
+}
+```
+
+While the page.js file defines the content of the page, the **layout.js** file defines the shell around one or more pages. i.e to the layout the page will be rendered. Every page needs at-least one root layout.js file. We can also have nested layout.js files. In the layout file we are also exporting a react component. This component accepts the children prop which is used to inject some content into the body tag. This component renders an html and a body tag. We don't need to add the head tag here because we can do that in another way in nextjs. The sample code will look like:
+
+```javaScript
+import './globals.css'
+ 
+export const metadata = {
+  title: 'NextJS Course App',
+  description: 'Your first NextJS app!',
+};
+ 
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+We can export a constant named metadata to insert content in the head like shown above. The **metadata** is a reserved name.
+
+It needs an object which will apply the defined properties to the page and it will be used for all pages that uses that particular layout.  
+The children prop will have the content of the page.js file that is currently active.
+
+The globals.css file is used to define global styles in a project. We can import it in any layout file using the import statement.  
+If we have an icon named **icon.png** inside the app folder, it will be taken as favicon for the project. We don't need to setup anything else in our project.  
+We can also create files for our components anywhere in the project. We can either use smaller case or upper case for the filename. We can use it in any other component like in normal react. We can also store the components in the components folder. This folder is ignored by next routing because we don't have a page.js file.  
+A good practice is to move the components folder outside of the app folder (root of the project). If we do so we can use the @ symbol to refer to the root of the project. The `jsconfig.json` file which configures this. The code will look like:  
+`import Header from "@/components/header.js";`
+
+As you already learned, there are some reserved filenames when working with NextJS.
+
+Important: These filenames are only reserved when creating them inside of the `app/` folder (or any subfolder). Outside of the `app/` folder, these filenames are not treated in any special way.
+
+Here's a list of reserved filenames in NextJS - you'll, of course, learn about the important ones throughout this section:
+
+- `page.js` \=> Create a new page (e.g., `app/about/page.js` creates a `<your-domain>/about` page)
+- `layout.js` \=> Create a new layout that wraps sibling and nested pages
+
+- `not-found.js` \=> Fallback page for "Not Found" errors (thrown by sibling or nested pages or layouts)
+- `error.js` \=> Fallback page for other errors (thrown by sibling pages or nested pages or layouts)
+- `loading.js` \=> Fallback page which is shown whilst sibling or nested pages (or layouts) are fetching data
+- `route.js` \=> Allows you to create an API route (i.e., a page which does NOT return JSX code but instead data, e.g., in the JSON format)
+
+You also find a list with all supported filenames & detailed explanations in the official docs: `https://nextjs.org/docs/app/api-reference/file-conventions`
+
+We can create dynamic routes in nextjs. We can define a route once and render different pages for different content. We can create nested folder the particular route with `[]` and specifying an identifier of your choice. Inside this special folder we need a page.js file. Inside this file we can create a react component. For example we have a blog route and inside this we have nested dynamic route to show each blog post. We can link it like: `<Link href="/blog/post-1">Post 1</Link>` .  
+The \[\] tells nextjs that we want some path segments after the parent route path and we don't know the exact value. The variable name we defined inside the \[\] will give access to the concrete value which we will get dynamically. The component function of the page.js file of that dynamic route will get a props object. Inside this prop object we have a params prop which can pull out using de-structuring. This is automatically done by nextjs.
+
+Inside the params object we will have all the route variables we defined and the value will be actual value which we will have at run time. The example code will look like:
+
+```javaScript
+export default function BlogPostPage({ params }) {
+  return (
+    <main>
+      <h1>Blog Post</h1>
+      <p>{params.slug}</p>
+    </main>
+  );
+}
+```
+
+We can define **nested layout files** in Next.js, where a parent `layout.jsx` exists at the root and a separate `layout.jsx` exists inside a child route folder. The components in the **child layout** only become active when the user visits that specific route. While the child layout is a **separate file** (not code inside the parent), it is rendered **inside the parent layout's** `**children**` **prop**, meaning the child's DOM structure is physically nested within the parent component at runtime.  
+Nextjs will wrap the layout around all the pages and nested layouts that are covered by this layout. So the children prop will give us access to the nested layouts and pages.
+
+When importing images to a component in next js we can import it into an object just like in react. But to actually display the image we must access the src property of this object. example:
+
+```javaScript
+import logoImg from '@/assets/logo.png';
+....
+ <img src={logoImg.src} alt="A plate with food on it"/>
+```
+
+Next js supports CSS modules just like react. We can also use tailwind css if we want.
+
+In next js we have a better way for outputting images rather than using the default img tag. In nextjs we have a built in `Image` component which let's you output images in a more optimized way like lazy loading images behind the scenes so that that are only displayed when they are visible on page. Image component can also simplify the process of setting up responsive images also. It is recommended to use the Image component if you need to output images in your page. To use this component we must import it like:  
+`import Image from "next/image";`  
+Then use this component instead of img tag in the code.  
+Example:  
+`<Image src={logoImg} alt="A plate with food on it" />  `**Note that we just need to pass the image object as the source to the Image component**. The information the image object will be used to display the image in an optimized way.
+
+It will also infer the size of the image automatically. It will also display the image in suitable optimized formats depending on the browser. For example it will display the images in webp format if the user is visiting from chrome. It will also lazy loads the image. There are a lot of props we can set for the Image component but the most necessary props are set by default.  
+In certain cases we want the images to be visible as soon as the page is loaded. In such cases we can set the `priority` prop to the Image component to make the image load as fast as possible. This is particularly useful for content such as logos.  
+eg:  
+`<Image src={logoImg} alt="A plate with food on it" priority />`
+
+We can also use css modules for page files also.
+
+In most react applications we use client components where the code runs on the client's browser. But with next js it changes, because nextjs is a full stack framework. It also has a backend. The code executes on the backend. By default all components in your next js application are rendered on the server. Therefore they are called react server components. This feature can be unlocked in normal react also with some extra configuration. In nextjs it is the default.
+
+Server components are one of the biggest advantages of nextjs. By using server side components the client has less javascript code to download thus increases the performance of the website. It is also great for search engine optimization, because web crawlers can see complete finished page with content. This is not the case for normal react applications. Here the page loaded is mostly empty initially and the content is loaded when the user interacts with the page.
+
+In nextjs you can also create client components. These components are technically pre rendered on the server but also rendered on the client. In most cases these components must be rendered on the client because it contains code or use some features that are only available in the client. The hooks like `useState` and `useEffect` can only be used in client components. Also event handlers are only available in client components.  
+You have to explicitly tell nextjs when you are creating a client side component. This is done by specifying a special directive at the top of the file that holds that component.  
+we use the `"use client";`
+
+We can get the current path in nextjs using the `usePathname()` hook. This can be useful to make items in the navigation bar active or inactive based on the current path.  
+We can import this hook like:  
+`import {usePathname} from "next/navigation";`
+
+We can store this value into a constant and it will have the path after the domain name.
+
+```javaScript
+  const path = usePathname();
+.......
+   <Link
+                href="/meals"
+                className={
+                  path.startsWith("/meals") ? classes.active : undefined
+                }
+              >
+                Browse Meals
+              </Link>
+```
+
+**NOTE:** This hook only works in client components so make sure that we mark it as client component by using `"use client"` directive at the beginning of the file. Another important thing is to use client components as far down the tree as possible. This way you only turn the components into client components only when required. This way most of the components in your application will remain server components and you will get the advantages of that.  
+Example:
+
+```javaScript
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import classes from "./nav-link.module.css";
+export default function NavLink({ href, children }) {
+  const path = usePathname();
+  return (
+    <Link
+      href={href}
+      className={
+        path.startsWith(href)
+          ? `${classes.active} ${classes.link}`
+          : classes.link
+      }
+    >
+      {children}
+    </Link>
+  );
+}
+```
+
+We can create a custom client component and use it so that we don't need to convert the entire page into a client component.
+
+You can use client components inside of server components.
+
+You can use the fill prop to the Image component if you don't know the exact width and height of the image beforehand.
+
+We can use sqlite database in nextjs projects. To use that we need to install `better-sqlite3` using npm. Sqlite can be set up locally without the need for complex configuration. This package let's us work with sqlite databases easily.
+
+To fetch the data there are a couple of ways in nextjs. We can of course fetch the data using `useEffect` just like in normal react applications. But in nextjs we don't always need that approach, because the nextjs is a full stack framework. All the code is executed in the server. So we can directly reach out to the database from our component function.  
+It is a good practice to keep the code related to fetching and manipulating data of a database inside of a separate lib folder. Inside this folder we can create javascript files which can perform the database operations.
+
+In a js file we will need to import the sql function from better-sqlite3 package and call it with the name of database file as string passed as argument.  
+To create database queries we can use the `prepare()` method on the database object and pass the sql statement as a string.
+
+We can then chain the `all()` method to execute the query which fetches all rows from the table. If we want to get a single row we can chain the `get()` method. We can chain the `run()` method to insert data.  
+We can easily convert the server components to async functions by adding the `async` keyword, which cannot be done on normal react components. We can use await statement in the function body of the component function also.
+
+Nextjs performs very aggressive caching behind the scenes. It caches any page you visited including the data of the page and then if you go to another page and come back it loads that existing page from the cache.
+
+To show the users a loading screen we can create a `loading.js` file inside of the route where you need to show it. It will be applied to that route as well as the nested routes. `loading.js` is a reserved file name. This page becomes active when any of the sibling page or nested route page is loading data. This page is shown as a fallback until the data is there.
+
+Nextjs also provides another way for handling loading states. If we have a component which performs some operation which may take a while. We can separate the component which is actually responsible for loading and showing the data and place this smaller component as a child of the previous component. The advantage of this approach is that we are now outsourcing the data fetching part to a separate component. And now we can wrap this component with the `Suspense` component which is built into react. This helps us to handle loading state and show fallback content until some data or a resource has been loaded.  
+The loading.js file also does the same thing behind the scenes. It wraps the page inside the Suspense component. It shows the content of the loading page as a fallback. The code will look like:
+
+```javaScript
+import Link from "next/link";
+import classes from "./page.module.css";
+import MealsGrid from "@/components/meals/meals-grid.js";
+import { getMeals } from "@/lib/meals";
+import { Suspense } from "react";
+async function Meals() {
+  const meals = await getMeals();
+  return <MealsGrid meals={meals} />;
+}
+export default function MealsPage() {
+  return (
+    <>
+      <header className={classes.header}>
+        <h1>
+          Delicious meals, created{" "}
+          <span className={classes.highlight}>by you</span>
+        </h1>
+        <p>
+          Choose your favourite recipe and cook it yourself. It is easy and fun!
+        </p>
+        <p className={classes.cta}>
+          <Link href="/meals/share">Share Your Favourite Recipe</Link>
+        </p>
+      </header>
+      <main className={classes.main}>
+        <Suspense
+          fallback={<p className={classes.loading}>Fetching Meals....</p>}
+        >
+          <Meals />
+        </Suspense>
+      </main>
+    </>
+  );
+}
+```
+
+We can also an `error.js` file which is a reserved file for handling the errors. During the development even if you don't provide an error page nextjs will show an error screen. But in production it will not show this. To set up an error screen we need to create an error.js file and inside that we should define a component which will be rendered in case of error. The error page will be shown for errors in any page that sits in the same folder hierarchy or any nested page.  
+We will get details about the errors through props of the error component. We can de-structure the error prop and access the information of the error. The actual error message will be hidden by nextjs so that you can't accidentally expose any information to the end users.  
+**NOTE**: error.js must be a client component. This way nextjs can catch and show the error page even for client side errors.
+
+Example error page will look like:
+
+```javaScript
+"use client";
+export default function Error() {
+  return (
+    <main className="error">
+      <h1>An error occured!</h1>
+      <p>Failed to fetch meal data. Please try again later.</p>
+    </main>
+  );
+}
+```
+
+There is also one another type of error which is 404 error. This type of error occurs when the user tries to navigate to an invalid route. Nextjs provides a default page for that, but if you want you can create a `not-found.js` file so that we can customize the not found page. This works the same way as error and loading pages i.e, it will automatically cover any sibling page or nested page. The code will look like:
+
+```javaScript
+export default function NotFound() {
+  return (
+    <main className="not-found">
+      <h1>Not found</h1>
+      <p>Unfortunately, we could not find the requested page or resource.</p>
+    </main>
+  );
+}
+```
+
+We can directly set html content in react. We can do this by using the `dangerouslySetInnerHTML` prop. You should use this prop with caution because it might subject you to cross site scripting attacks. This prop requires an object as value. Inside this object we should set the `__html` property which takes in the html code string as value.  
+We can use the `prepare()` method of the better sqlite package to prepare an SQL statement with dynamic values. We add the placeholder for the value which needs to be bind with the statement using the `?` symbol; then we will chain the `.get()` method and pass the value which needs to bind.
+
+The code will look like:
+
+```javaScript
+export async function getMeal(slug){
+  return db.prepare('SELECT * FROM meals WHERE slug=?').get(slug);
+}
+```
+
+When working with SQLite on nextjs it is not required to use promises for manipulating the data in the database and fetching the data because it works instantly.
+
+In certain cases we might need to trigger a not found page manually from the code. This can be done by calling the `notFound()` function imported from `"next/navigation"` . Calling this function will stop the function from executing and will show the closest not found or error page. Example:
+
+```javaScript
+import { notFound } from "next/navigation";
+import { getMeal } from "@/lib/meals";
+export default function MealDetailsPage({ params }) {
+  const meal = getMeal(params.mealSlug);
+  if (!meal) {
+    notFound();
+  }
+..........
+}
+```
+
+We can trigger a click on a component using ref by using the `.click()` method on the current instance of the ref.  
+Example code:
+
+```javaScript
+"use client";
+import { useRef } from "react";
+import classes from "./image-picker.module.css";
+export default function ImagePicker({ label, name }) {
+  const imageInput = useRef();
+  function handlePickClick() {
+    imageInput.current.click();
+  }
+  return (
+    <div className={classes.picker}>
+      <label htmlFor={name}>{label}</label>
+      <div className={classes.controls}>
+        <input
+          className={classes.input}
+          type="file"
+          id={name}
+          accept="image/png, image/jpeg"
+          name={name}
+          ref={imageInput}
+        />
+        <button
+          className={classes.button}
+          type="button"
+          onClick={handlePickClick}
+        >
+          Pick an image
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+We can use the event object to get the files passed through event (onChange). We can use `event.target.files[0]` to access the file selected through a file input field. This can be done with regular react also. The files property will only exist for file input field. If the input field supports multiple file selection it will all be present in the array. We enable multiple input by passing the `multiple` prop to the input field.
+
+We can show a preview of a file such as an image by creating a data url. This can be done with the help of `FileReader` class which is built into javascript. We can create an object of this class and call the `readAsDataURL()` on this object and pass the file as argument to it. It does not return anything. We can access the data url by assigning the `onload` property to the file reader object. We store a function as value in onload. This method will be triggered by the file reader once this method here is read as data url. Inside this function we can access the `result` property of file reader object. This will be the generated URL. The code will look like:
+
+```javaScript
+function handleImageChange(event) {
+    const file = event.target.files[0];
+    if (!file) {
+      setPickedImage(null);
+      return;
+    }
+    const fileReader = new FileReader();
+    fileReader.onload = () => {
+      setPickedImage(fileReader.result);
+    };
+    fileReader.readAsDataURL(file);
+  }
+```
+
+In the JSX code:
+
+```javaScript
+<div className={classes.controls}>
+        <div className={classes.preview}>
+          {!pickedImage && <p>No image picked yet.</p>}
+          {pickedImage && (
+            <Image
+              src={pickedImage}
+              alt="The image selected by the user."
+              fill
+            />
+          )}
+        </div>
+        <input
+          className={classes.input}
+          type="file"
+          id={name}
+          accept="image/png, image/jpeg"
+          name={name}
+          ref={imageInput}
+          onChange={handleImageChange}
+        />
+        <button
+          className={classes.button}
+          type="button"
+          onClick={handlePickClick}
+        >
+          Pick an image
+        </button>
+      </div>
+```
+
+Nextjs provides a more powerful and convenient pattern that helps us in handling form submission and sending the data. Inside of the component function we can create create a utility function and use the `"use server";` special directive inside this utility function. This directive creates a server action which is a function that guarantees to be executed on the server. In case of functions we must explicitly state that it belongs to the server unlike normal component functions. We must also make sure that this utility function is `async`. Then we need to pass this utility function as value for the `action` prop for the form element.  
+This pattern ensures that nextjs will create a request behind the scenes when the form is submitted and send it to nextjs server. This time the server action function gets triggered and we can handle the form submission handling. This server action function(utility function) will automatically get the `formData` object. The example code will look like:
+
+```javaScript
+export default function ShareMealPage() {
+  async function shareMeal(formData) {
+    "use server";
+    const meal = {
+      title: formData.get("title"),
+      summary: formData.get("summary"),
+      instructions: formData.get("instructions"),
+      image: formData.get("image"),
+      creator: formData.get("name"),
+      creator_email: formData.get("email"),
+    };
+  }
+  return (
+ .....
+ <form className={classes.form} action={shareMeal}>
+          <div className={classes.row}>
+            <p>
+.....
+    </>
+  );
+}
+```
+
+The above method is one way for adding server actions. The above approach will only work if the component you are adding this function is not a client component. It is also not a good idea to store the form submission handling in the same file as JSX code. So it is better to store the server actions in a separate file. Typically we will create a `actions.js` file and store it inside of the lib folder. The file name doesn't matter here. This file should have the `"use server";` directive at the top of the page. When you do like this all the functions you define in that file will be treated as server action. The code will look like:
+
+```javaScript
+"use server";
+ 
+export async function shareMeal(formData) {
+  const meal = {
+    title: formData.get("title"),
+    summary: formData.get("summary"),
+    instructions: formData.get("instructions"),
+    image: formData.get("image"),
+    creator: formData.get("name"),
+    creator_email: formData.get("email"),
+  };
+  console.log(meal);
+}
+```
+
+If we do so we can import these functions to client components as well and use it.
+
+We can create slugs using the `slugify` package. We install it using `npm install slugify` .  
+We can install the `xss` package to protect us from cross site scripting attacks. We can do it by using `npm install xss`. Cross site scripting vulnerability is applicable when we are taking user generated content and directly setting them in our application. The example code will look like:
+
+```javaScript
+import slugify from "slugify";
+import xss from "xss";
+.....
+export function saveMeal(meal) {
+  meal.slug = slugify(meal.title, {lower:true});
+  meal.instructions = xss(meal.instructions);
+....
+}
+```
+
+We can write to the file system by using the fs library of node. After importing this we can call the `createWriteStream` method to write data to a certain file. It needs a path to which you want to write to. We will get a stream object as a result of the above and then we call call the `write()` method on the stream object to write to the stream to the file. This write method requires a chunk as argument. So we must convert our image into a buffer. We can call the `arrayBuffer()` method on the image to perform this. This method will return a promise so we should await it. The array buffer method returns the buffer as an array so we need to convert it into a regular buffer, we can easily convert this using the `Buffer.from()` method. The second argument of the write method is a function which will be executed once the file is done writing. This function will automatically receive an error object whose value will be null if everything works fine.
+
+By default all requests for images will be sent to the public folder. Due to this we don't need to pass public in the path name when storing the path.  
+To actually insert the data we can use the prepare statement of better sqlite package. The better sqlite package offers an easier syntax when inserting data. We can provide the values to be inserted with `@` symbol instead of `?`. By this method we can directly send an object and it will automatically infer the necessary fields. The code will look like:
+
+```javaScript
+export async function saveMeal(meal) {
+  meal.slug = slugify(meal.title, { lower: true });
+  meal.instructions = xss(meal.instructions);
+  const extension = meal.image.name.split(".").pop();
+  const fileName = `${meal.slug}.${extension}`;
+  const stream = fs.createWriteStream(`public/images/${fileName}`);
+  const bufferedImage = await meal.image.arrayBuffer();
+  stream.write(Buffer.from(bufferedImage), (error) => {
+    if (error) {
+      throw new Error("Saving image failed!");
+    }
+  });
+  meal.image = `/images/${fileName}`;
+  db.prepare(
+    `
+  INSERT INTO meals (title, summary,  instructions, creator, creator_email, image, slug) VALUES(@title, @summary,  @instructions, @creator, @creator_email,@image, @slug )
+`,
+  ).run(meal);
+  redirect("/meals");
+}
+```
+
+**NOTE:** Always make sure that there is a preceeding / in the path so that the file can be accessible.
+
+We can use the `useFormStatus` hook to track the submission status of a form. It works in nextjs only though this is a react feature. We need to import it from `"react-dom"`. This hook returns a status object. This status object has `pending` property which becomes true if there is an ongoing request and false otherwise. This hook can only be used in a client component. Also this hook will only give the status if it is used inside of a component which is wrapped inside of form. So it is a good idea a to create a new component which is a client components and inside this component we can create a button and use this hook to enable or disable this button based on the pending status. The component will look like:
+
+```javaScript
+"use client";
+import { useFormStatus } from "react-dom";
+export default function MealsFormSubmit() {
+  const { pending } = useFormStatus();
+  return (
+    <button disabled={pending}>
+      {pending ? "Submitting..." : "Share Meal"}
+    </button>
+  );
+}
+```
+
+We can use this component inside of the form.
+
+You should perform validations on the input data on the server side, because the client side validations can be disabled from the browser dev tools. When handling form validation in the server side it is not a good practice to throw an error, because it will remove all the valid data and redirect us to the error page. The user will need to add all the data again before he can submit the form again.
+
+We can also return values from server actions. When validating the inputs in the server action we can send response object back instead of throwing errors. The shape of the object is up to the user, just ensure that it is a serializable object (it should not have any methods as values).  
+To access the value returned from the server action we can use the `useFormState()` hook from `react-dom` package. This hook works similar to that of use state hook. This hook is responsible for managing the state of the page which uses a form that will be submitted with the help of server actions. It requires 2 arguments. The first one is the actual server action that should be triggered when the form is submitted. The second argument is the initial state of the component (initial value returned by useFormState before the action is triggered and yielded a response).  
+It will give you an array with 2 elements.
+
+The first element is the current response of the page(state). The second element is the formAction function which we should set as value for the action prop of the form element.  
+We can use this state object to check if there are any errors in the component.  
+We should also modify the implementation of the server action function such that the first argument of the function is the previous state. We should accept it even if we are not using it.
+
+**NOTE**: The `useFormState` hook should be present only in a client component.
+
+**NOTE**: The `useFormState` hook is renamed to `useActionState`. We must import it from `"react"` instead of react-dom. The implementation remains the same.  
+Example code:
+
+```javaScript
+export async function shareMeal(prevState, formData) {
+  const meal = {
+    title: formData.get("title"),
+    summary: formData.get("summary"),
+    instructions: formData.get("instructions"),
+    image: formData.get("image"),
+    creator: formData.get("name"),
+    creator_email: formData.get("email"),
+  };
+  if (
+    isInvalidText(meal.title) ||
+    isInvalidText(meal.summary) ||
+    isInvalidText(meal.instructions) ||
+    isInvalidText(meal.creator) ||
+    isInvalidText(meal.creator_email) ||
+    !meal.creator_email.includes("@") ||
+    !meal.image ||
+    meal.image.size === 0
+  ) {
+    return {
+      message: "Invalid input",
+    };
+  }
+  await saveMeal(meal);
+}
+```
+
+The client component code will look like:
+
+```javaScript
+"use client";
+import { useActionState } from "react";
+export default function ShareMealPage() {
+  const [state, formAction] = useActionState(shareMeal, {
+    message: null,
+  });
+  return (
+    <>
+.....
+<form className={classes.form} action={formAction}>
+......
+</>);
+```
+
+To build the nextjs application to production we should run the `npm run build` command in the root folder of the project. This will give us a project that we can deploy onto a server. To run the production server we use the `npm start` command.  
+Nextjs performs caching aggresively. When we run the build command nextjs generates and pre render all pages of the application that can be pre generated (which does not have dynamic content). This allows the users to instantly visit the finished page without needing to wait. Nextjs also caches the pre rendered pages so it can serve to all visitors.  
+The downside of the approach is that it never re-fetch the data used for the page, it will just use the pre rendered pages again. This can cause problems when a user adds some new data to the website and this will not be available because the data is not re-fetched.
+
+To fix the above problem of aggressive caching, we need to tell nextjs to throw away parts of it's cached data when a new data is added. There is a built in function provided by nextjs for this. The `revalidatePath()` method tells nextjs to revalidate the cache that belongs to a certain route path. For example if we are changing the data of the meals page we can use like : `revalidatePath("/meals");`
+
+By default only that path will be revalidated, no nested path will be revalidated. If we want to revalidate the nested paths also we can pass a second argument to the function which is `"layout"`.  
+We import this method from `"next/cache"` package.  
+We should only revalidate the nested pages if the data for the changed page is also stale. Otherwise we can ignore the second argument to this function.
+
+If we want to revalidate all the pages of the website we can pass `"/"` as first argument and `"layout"` as second argument to the `revalidatePath()` method.
+
+The images and files which we store in the public folder is copied over to `.next` folder. This folder will also contain the cached pages also. This folder will be used by the running nextjs production server. If we add new images into the public folder, those will be ignored.  
+So it is recommended to store any files generated at the run time using services like AWS S3\.
+
+We can customize the metadata of a page by setting the metadata object. We can set various properties and configure the metadata so that it works well with search engine crawlers.
+
+`https://nextjs.org/docs/app/api-reference/functions/generate-metadata`
+
+If you add the metadata to a layout it will automatically be added to all the pages that are wrapped with that layout unless the page specifies its own metadata.  
+We can specify the metadata by exporting the `metadata` constant from the page.  
+Example:
+
+```javaScript
+export const metadata = {
+  title: "All Meals",
+  description: "Browse the delicious meals shared by our vibrant community.",
+};
+```
+
+For dynamic pages also we can add metadata by exporting an async function called `generateMetadata`. It should be exactly like this because nextjs will look for this if it can't find the metadata constant or variable. Nextjs will execute this function for you. We must return a `metadata` object in that function. This function receives the same data as our page component receives as props. So we can construct the meta data and return an object which sets the metadata.  
+Example:
+
+```javaScript
+export async function generateMetadata({ params }) {
+  const meal = getMeal(params.mealSlug);
+  if(!meal){
+    notFound();
+  }
+  return {
+    title: meal.title,
+    description: meal.summary,
+  };
+}
+export default function MealDetailsPage({ params }) {
+......
+}
+```
+
+We are checking if the data is not null to ensure that the page doesn't throw an error if the item required is not found.
+
